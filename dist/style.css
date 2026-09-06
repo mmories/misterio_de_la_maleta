@@ -64,3 +64,6 @@
  #verbs button{min-height:36px;text-align:center;border:1px solid #30413f}
  #scene{aspect-ratio:8/5}
 }
+
+dialog .scene-choice{display:block;width:100%;margin:10px 0 0;text-align:left;font-weight:bold;color:#f1cf91;background:#102023}
+dialog .scene-choice small{display:block;margin-top:4px;color:#92aaa2;font-size:10px;letter-spacing:1px}
