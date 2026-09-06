@@ -1,0 +1,15 @@
+// Original procedural score: 64 bars, 57.6 seconds. No recorded music or external assets.
+export class AudioEngine{
+ constructor(){this.music=true;this.sound=true;this.ctx=null;this.theme='title';this.step=0;this.next=0;this.voices=new Set;}
+ async unlock(){if(!this.ctx){this.ctx=new (window.AudioContext||window.webkitAudioContext)();this.bus=this.ctx.createGain();this.bus.gain.value=.16;this.bus.connect(this.ctx.destination);this.timer=setInterval(()=>this.schedule(),60);}if(this.ctx.state==='suspended')await this.ctx.resume();}
+ setTheme(t){this.theme=t;this.step=0;this.next=this.ctx?this.ctx.currentTime+.05:0;this.stopVoices();}
+ stopVoices(){for(const o of this.voices){try{o.stop();}catch{}}this.voices.clear();}
+ toggleMusic(){this.music=!this.music;if(!this.music)this.stopVoices();this.next=this.ctx?this.ctx.currentTime+.05:0;return this.music;}
+ note(midi,t,d,type='triangle',volume=.16){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=type;o.frequency.value=440*2**((midi-69)/12);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(volume,t+.014);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(this.bus);o.start(t);o.stop(t+d+.02);this.voices.add(o);o.onended=()=>{this.voices.delete(o);o.disconnect();g.disconnect();};}
+ schedule(){if(!this.ctx||!this.music||document.hidden)return;const now=this.ctx.currentTime;if(this.next<now)this.next=now+.02;const dt=this.theme==='lobby'?.28:.225;const melodies=[[69,72,76,72,71,67,64,67,65,69,72,69,68,71,76,71],[76,74,72,69,71,72,74,67,72,71,69,65,68,71,69,0],[69,0,76,74,72,0,71,67,65,0,69,72,71,68,69,0],[81,76,72,76,79,74,71,74,77,72,69,72,76,71,68,69]];while(this.next<now+.15){const s=this.step%256,bar=Math.floor(s/8),base=[45,43,41,40][Math.floor(bar/2)%4],mel=melodies[Math.floor(s/64)%4][Math.floor(s/2)%16];if(s%2===0&&mel)this.note(mel+(this.theme==='lobby'?-12:0),this.next,dt*1.8,'triangle',this.theme==='lobby'?.2:.28);if(s%4===0)this.note(base,this.next,dt*2.8,'triangle',.27);if(s%2===1)this.note(base+12+[0,7,12,7][Math.floor(s/2)%4],this.next,dt*.7,'sine',.13);this.next+=dt;this.step++;}}
+ effect(kind){if(!this.ctx||!this.sound)return;const t=this.ctx.currentTime;if(['key','item','bell'].includes(kind)){this.note(kind==='bell'?83:76,t,.28,'sine',.6);this.note(kind==='bell'?79:88,t+.13,.38,'sine',.35);return;}
+ const duration={engine:2,door:.25,step:.07,paper:.3,case:.16,elevator:1.8}[kind]||.2;
+ const n=this.ctx.createBuffer(1,this.ctx.sampleRate*duration,this.ctx.sampleRate),v=n.getChannelData(0);for(let i=0;i<v.length;i++)v[i]=(Math.random()*2-1)*(1-i/v.length);
+ const source=this.ctx.createBufferSource(),filter=this.ctx.createBiquadFilter(),gain=this.ctx.createGain();source.buffer=n;filter.type='lowpass';filter.frequency.value={engine:180,elevator:250,step:500,paper:3500,door:450,case:130}[kind]||1000;gain.gain.value=kind==='engine'?.75:.45;source.connect(filter);filter.connect(gain);gain.connect(this.bus);source.start(t);source.onended=()=>{source.disconnect();filter.disconnect();gain.disconnect();};
+ }
+}
