@@ -52,7 +52,7 @@ ctx.globalAlpha=.12;ctx.fillStyle='#ffe7a8';ctx.fillRect(382,382,105,1);ctx.fill
 }
 ctx.restore();
 }
-function drawComerciaPoster(){}
+function drawComerciaPoster(){if(!state.tornCommercial)return;ctx.save();ctx.translate(850,80);ctx.fillStyle='#e6d4a4';ctx.fillRect(0,0,94,158);ctx.strokeStyle='#6b5238';ctx.strokeRect(3,3,88,152);ctx.fillStyle='#243856';ctx.textAlign='center';ctx.font='bold 9px Georgia';ctx.fillText('SOY UN HINCHA DEL',47,39);ctx.fillText('EQUIPO EL LOGROÑÉS',47,52);ctx.font='bold 7px Georgia';ctx.fillText('RIOJANO DE CEPA,',47,78);ctx.fillText('GANAR NO SE DEJA',47,89);ctx.fillText('LAS RIOJANAS NOS',47,113);ctx.fillText('AYUDAN A VENCER',47,124);ctx.fillStyle='#8b6039';ctx.beginPath();ctx.arc(106,135,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#d2ad78';ctx.beginPath();ctx.moveTo(98,128);ctx.lineTo(114,141);ctx.moveTo(114,128);ctx.lineTo(99,142);ctx.stroke();ctx.restore();}
 function followExteriorRoad(){const p=Math.max(0,Math.min(1,(1050-carX)/1410));carY=620-270*p+72*p*p;carHeight=226-168*p;}
 function renderCar(){carArrived=true;}
 function exteriorBackdrop(){if(!images.exteriorArrived){const arrived=new Image;arrived.src='assets/exterior-car-arrived.png';images.exteriorArrived=arrived;}return carArrived&&images.exteriorArrived.complete?images.exteriorArrived:images.exterior;}
@@ -64,7 +64,7 @@ if(images.exterior){ctx.drawImage(scene==='lobby'||scene==='end'?receptionBackdr
 if(scene==='lobby'||scene==='end'){
 drawComerciaPoster();
 // Pedro is composited behind the existing desk and glazing, preserving depth.
-ctx.save();ctx.beginPath();ctx.rect(72,183,126,115);ctx.clip();renderFrame(frames.pedro[pedroPose],148,340,147);ctx.restore();
+ctx.save();ctx.beginPath();ctx.rect(72,183,126,115);ctx.clip();const pedroIdle=pedroPose===3?Math.sin(clock*1.35):0,pedroShift=pedroPose===3?Math.sin(clock*.42)*1.2:0;renderFrame(frames.pedro[pedroPose],148+pedroShift,340-pedroIdle*1.4,147+pedroIdle*.8);if(pedroPose===3&&Math.sin(clock*.42)>.975){ctx.fillStyle='rgba(16,18,20,.42)';ctx.fillRect(139,241,17,2);}ctx.restore();
 if(images.prim){const cellW=images.prim.width/2;ctx.drawImage(images.prim,primAlert>clock?cellW:0,40,cellW,180,205,355,128,90+breath*.4);}
 if(elevatorOpen>0){const a=HOTSPOTS.find(h=>h.id==='elevator').rect;ctx.save();ctx.beginPath();ctx.rect(594,205,30,67);ctx.clip();ctx.fillStyle='#161818';ctx.fillRect(606-elevatorOpen*13,205,elevatorOpen*26,67);ctx.restore();ctx.fillStyle='#f3c474';ctx.fillRect(580,229,3,4);}
 renderPlayer();}

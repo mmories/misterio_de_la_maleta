@@ -11,7 +11,7 @@ export const HOTSPOTS=[
 {id:'rulesNotice',name:'aviso de normas',rect:[287,217,39,69],at:[355,445],look:'NORMAS DE CONVIVENCIA: silencio desde las 23:00, visitas anunciadas y nada de maletas en pasillos. Al pie: «Potele revisa los gráficos de llegada». Parece que no bromeaban.'},
 {id:'residentsNotice',name:'aviso de residentes',rect:[299,309,29,49],at:[355,445],look:'AVISO A RESIDENTES: «El responsable del ColaCao ha agotado otra vez las existencias. Se ruega dejar una cucharada para el resto de la península». Firmado: Comedor.'},
 {id:'board',name:'cartelera',rect:[744,155,100,102],at:[683,340]},
-{id:'comercia',name:'cartel de La Comercial',rect:[844,72,108,178],at:[760,345],look:'«LA COMERCIAL · Círculo de Comercio y Negocios». El cartel es bilingüe; la modestia, internacional.'},
+{id:'comercia',name:'cartel de La Comercial',rect:[838,66,122,195],at:[683,340],look:'«LA COMERCIAL · Círculo de Comercio y Negocios». El cartel es bilingüe; la modestia, internacional.'},
 {id:'directory',name:'directorio',rect:[544,171,128,57],at:[570,334],look:'ASCENSORES, HABITACIONES, BIBLIOTECA. Una flecha hacia arriba y tres formas distintas de perderse.'},
 {id:'radiator',name:'radiador',rect:[746,350,62,70],at:[686,367],look:'Un radiador. En Bilbao es menos decoración que servicio de emergencias.'},
 {id:'sofa',name:'sofá',rect:[740,285,210,103],at:[686,367],look:'Skay marrón. El material oficial de todas las instituciones españolas.'},
@@ -31,9 +31,9 @@ rules:[['Julito','¿Hay alguna norma que debería conocer?'],['Pedro','Hay mucha
 weather:[['Julito','¿Siempre hace este tiempo en Bilbao?'],['Pedro','No, hombre. A veces llueve.'],['Julito','Está lloviendo.'],['Pedro','Esto es para que no se levante polvo.'],['Julito','Las riojanas nos ayudan a vencer… pero no sé si contra esto.'],['Pedro','Contra Bilbao no gana ni el Logroñés.'],['Julito','No he traído paraguas.'],['Pedro','Pues ya tienes tema de conversación para todo el curso.']],
 suitcase:[['Julito','¿Pasa algo con mi maleta?'],['Pedro','¿Con tu maleta?'],['Pedro','No. ¿Por qué iba a pasar algo?'],['Julito','Me ha parecido que la miraba.'],['Pedro','Miro muchas cosas. Es recepción.'],['Julito','La maleta no canta, pero parece marcar el ritmo.'],['Pedro','Los ascensores están al fondo.']],
 after:[['Julito','¿Alguna cosa más?'],['Pedro','Sí. Tercera planta. Antes de que cambie de opinión.']],
-locked:[['Julito','Para subir necesitaré la llave de mi habitación.'],['Julito','Y, antes de eso, saber cuál es mi habitación.'],['Pedro','Exacto. La recepción sigue en el mismo sitio, por si necesitas empezar por ahí.']]
+locked:[['Julito','El ascensor está listo. Yo no.'],['Julito','Primero tendré que averiguar cuál es mi habitación y conseguir su llave.'],['Julito','Pedro parece saber dónde vive todo el mundo. Será mejor preguntarle.']]
 };
-export function newState(){return {introCompleted:false,talkedToPedro:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,tookPapers:[],readTopics:[]};}
+export function newState(){return {introCompleted:false,talkedToPedro:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,tornCommercial:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,tookPapers:[],readTopics:[]};}
 export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[641,429],[781,599],[0,599]];
 export const WALK_NODES=[[229,551],[355,445],[460,465],[510,400],[530,360],[570,334],[606,287],[683,340],[686,367],[642,458],[400,404]];
 export function pointInPolygon(p,poly=WALK_POLYGON){let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>p[1])!==(b[1]>p[1]))&&(p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]))yes=!yes;}return yes && !(p[0]>205&&p[0]<337&&p[1]>394&&p[1]<447);}

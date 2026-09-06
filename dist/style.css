@@ -43,3 +43,24 @@
 /* A restrained CRT/VGA finish keeps the painted scenes tactile without impairing UI. */
 #scene::after{content:"";position:absolute;inset:0;z-index:6;pointer-events:none;background:radial-gradient(ellipse at center,transparent 52%,rgba(3,8,10,.28) 100%),repeating-linear-gradient(0deg,rgba(255,245,205,.025) 0 1px,rgba(0,0,0,.035) 1px 3px);mix-blend-mode:multiply}
 #game{box-shadow:0 18px 65px #0008,0 0 0 3px #0d1618,0 0 0 4px #52615c}
+
+/* Fit scene, verbs and inventory into typical laptop-height viewports. */
+@media (min-width:821px) and (max-height:920px){
+ body{padding:12px;align-items:flex-start}
+ #shell{width:min(1080px,calc((100vh - 225px)*1.6),100%)}
+ .topbar{padding-bottom:7px}
+ #controls{padding-bottom:9px}
+ #sentence{min-height:31px;margin-bottom:7px;font-size:14px}
+ #verbs button{font-size:13px;padding:3px 6px}
+ #items button{height:55px;min-width:65px}
+ footer{padding-top:7px}
+}
+@media (max-width:700px){
+ body{display:block;padding:0}
+ #shell{width:100%;min-height:100svh}
+ #game{border-inline:0;box-shadow:none}
+ .console{grid-template-columns:1fr}
+ .inventory{border-left:0;border-top:1px solid #465550;padding:9px 0 0}
+ #verbs button{min-height:36px;text-align:center;border:1px solid #30413f}
+ #scene{aspect-ratio:8/5}
+}
