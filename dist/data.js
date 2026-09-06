@@ -1,0 +1,41 @@
+export const VERBS=['MIRAR','COGER','USAR','HABLAR CON','ABRIR','CERRAR','DAR','EMPUJAR','TIRAR'];
+// Scene coordinates are in the 960 × 600 render space; only these data need changing with a new background.
+export const HOTSPOTS=[
+{id:'prim',name:'Prim',rect:[205,392,128,53],at:[355,474]},
+{id:'pedro',name:'Pedro',rect:[116,194,68,101],at:[355,445],look:'Pedro. Parece llevar aquí desde antes de que pusieran el edificio.'},
+{id:'phone',name:'teléfono',rect:[162,273,46,19],at:[355,445],look:'Un teléfono de los de quedarse quieto para hablar. El cable decide hasta dónde llega la conversación.'},
+{id:'mailbox',name:'casillero del correo',rect:[65,181,58,85],at:[355,445],look:'Un casillero dentro de la conserjería. Las cartas tienen más intimidad que nosotros.',flag:'inspectedMailbox'},
+{id:'reception',name:'recepción',rect:[10,296,284,130],at:[355,445],look:'Cristal, madera y un señor con todas las llaves. Aquí está el verdadero rectorado.'},
+{id:'shield',name:'escudo de Deusto',rect:[353,107,100,151],at:[400,404],look:'Colegio Mayor Deusto. Amar y servir. Espero que el orden sea opcional.'},
+{id:'plant',name:'planta',rect:[442,194,83,133],at:[530,360],look:'Una planta muy bien cuidada. ¿Será de María? No veo etiqueta, pero sí una hoja con más iniciativa que la mía.'},
+{id:'rulesNotice',name:'aviso de normas',rect:[287,217,39,69],at:[355,445],look:'NORMAS DE CONVIVENCIA: silencio desde las 23:00, visitas anunciadas y nada de maletas en pasillos. Al pie: «Potele revisa los gráficos de llegada». Parece que no bromeaban.'},
+{id:'residentsNotice',name:'aviso de residentes',rect:[299,309,29,49],at:[355,445],look:'AVISO A RESIDENTES: «El responsable del ColaCao ha agotado otra vez las existencias. Se ruega dejar una cucharada para el resto de la península». Firmado: Comedor.'},
+{id:'board',name:'cartelera',rect:[744,155,100,102],at:[683,340]},
+{id:'comercia',name:'cartel de La Comercial',rect:[844,72,108,178],at:[760,345],look:'«LA COMERCIAL · Círculo de Comercio y Negocios». El cartel es bilingüe; la modestia, internacional.'},
+{id:'directory',name:'directorio',rect:[544,171,128,57],at:[570,334],look:'ASCENSORES, HABITACIONES, BIBLIOTECA. Una flecha hacia arriba y tres formas distintas de perderse.'},
+{id:'radiator',name:'radiador',rect:[746,350,62,70],at:[686,367],look:'Un radiador. En Bilbao es menos decoración que servicio de emergencias.'},
+{id:'sofa',name:'sofá',rect:[740,285,210,103],at:[686,367],look:'Skay marrón. El material oficial de todas las instituciones españolas.'},
+{id:'correo',name:'El Correo',rect:[672,386,86,36],at:[642,458],look:'El periódico regional. Ideal para enterarme de dónde he venido a meterme.'},
+{id:'mundo',name:'El Mundo',rect:[758,386,77,32],at:[642,458],look:'El Mundo. Cinco años y ya parece que lo sabe todo.'},
+{id:'abc',name:'ABC',rect:[713,420,82,30],at:[642,458],look:'ABC. Tiene más letras que fotos. Y pesa como una asignatura.'},
+{id:'marca',name:'Marca',rect:[796,413,83,29],at:[642,458]},
+{id:'elevator',name:'ascensores',rect:[549,197,85,82],at:[606,287],look:'Tercera planta. El ascensor promete llevarme. La maleta exige que cumpla.'},
+{id:'stairs',name:'escaleras',rect:[665,230,75,120],at:[683,340],look:'Las escaleras suben con una alegría que mi maleta no comparte.'},
+{id:'entry',name:'puerta de entrada',rect:[5,493,181,101],at:[229,551],look:'Por ahí he entrado. Todavía podría decir que me he equivocado de edificio.'}
+];
+export const TALK={
+welcome:[['Pedro','Tú debes de ser Julio.'],['Julito','Julito.'],['Pedro','Aquí todavía estás a tiempo de cambiar de nombre.'],['Julito','Soy un hincha del equipo, el Logroñés…'],['Pedro','¿Eso responde a algo?'],['Julito','Todavía no, pero me ayuda a llegar.'],['Pedro','Bienvenido a Deusto. ¿Qué necesitas?']],
+key:[['Julito','Vengo a por la llave de mi habitación.'],['Pedro','Habitación 310. Tercera planta.'],['Pedro','Un momento. Las tengo ordenadas por un sistema infalible.'],['Julito','¿Por número?'],['Pedro','Por dónde las dejé ayer.'],['Pedro','Aquí tienes.']],
+place:[['Julito','¿Dónde estoy exactamente?'],['Pedro','En el Colegio Mayor Deusto. Bilbao. Octubre del 92.'],['Julito','Lo de Bilbao lo sabía.'],['Pedro','Estupendo. Ya llevas una asignatura aprobada.'],['Julito','Riojano de cepa, ganar no se deja…'],['Pedro','La segunda asignatura será aprender cuándo no cantar.'],['Pedro','Comedor arriba, biblioteca al fondo. En el comedor hay puré naranja y puré verde: no preguntes cuál es cuál antes de probarlos.'],['Pedro','Y cuidado con el ColaCao: hay un colegial que se lo consume todo. Si queda una cucharada, considérala patrimonio histórico.']],
+rules:[['Julito','¿Hay alguna norma que debería conocer?'],['Pedro','Hay muchas.'],['Pedro','Las importantes te las comentará Potele, el subdirector.'],['Pedro','Es experto en reglas y en gráficos de horas de llegada. Tiene uno para cada excusa.'],['Julito','¿Y cantar el himno del Logroñés?'],['Pedro','Solo si quieres que las visitas se anuncien desde otra provincia.'],['Pedro','Las maletas no se dejan en los pasillos.'],['Julito','¿Eso último es muy importante?'],['Pedro','Digamos que ya hemos tenido suficiente equipaje por hoy.']],
+weather:[['Julito','¿Siempre hace este tiempo en Bilbao?'],['Pedro','No, hombre. A veces llueve.'],['Julito','Está lloviendo.'],['Pedro','Esto es para que no se levante polvo.'],['Julito','Las riojanas nos ayudan a vencer… pero no sé si contra esto.'],['Pedro','Contra Bilbao no gana ni el Logroñés.'],['Julito','No he traído paraguas.'],['Pedro','Pues ya tienes tema de conversación para todo el curso.']],
+suitcase:[['Julito','¿Pasa algo con mi maleta?'],['Pedro','¿Con tu maleta?'],['Pedro','No. ¿Por qué iba a pasar algo?'],['Julito','Me ha parecido que la miraba.'],['Pedro','Miro muchas cosas. Es recepción.'],['Julito','La maleta no canta, pero parece marcar el ritmo.'],['Pedro','Los ascensores están al fondo.']],
+after:[['Julito','¿Alguna cosa más?'],['Pedro','Sí. Tercera planta. Antes de que cambie de opinión.']],
+locked:[['Julito','Para subir necesitaré la llave de mi habitación.'],['Julito','Y, antes de eso, saber cuál es mi habitación.'],['Pedro','Exacto. La recepción sigue en el mismo sitio, por si necesitas empezar por ahí.']]
+};
+export function newState(){return {introCompleted:false,talkedToPedro:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,tookPapers:[],readTopics:[]};}
+export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[641,429],[781,599],[0,599]];
+export const WALK_NODES=[[229,551],[355,445],[460,465],[510,400],[530,360],[570,334],[606,287],[683,340],[686,367],[642,458],[400,404]];
+export function pointInPolygon(p,poly=WALK_POLYGON){let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>p[1])!==(b[1]>p[1]))&&(p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]))yes=!yes;}return yes && !(p[0]>205&&p[0]<337&&p[1]>394&&p[1]<447);}
+export function visible(a,b){const d=Math.hypot(a[0]-b[0],a[1]-b[1]);for(let i=0;i<=d;i+=3){const t=d?i/d:0;if(!pointInPolygon([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]))return false;}return pointInPolygon(b);}
+export function findPath(from,to){if(!pointInPolygon(to))return null;if(visible(from,to))return [to];const nodes=[from,...WALK_NODES,to],dist=nodes.map(()=>Infinity),prev=[],done=new Set;dist[0]=0;for(let k=0;k<nodes.length;k++){let a=-1;for(let i=0;i<nodes.length;i++)if(!done.has(i)&&(a<0||dist[i]<dist[a]))a=i;if(a<0||!isFinite(dist[a]))break;if(a===nodes.length-1)break;done.add(a);for(let b=0;b<nodes.length;b++){if(done.has(b)||!visible(nodes[a],nodes[b]))continue;const v=dist[a]+Math.hypot(nodes[a][0]-nodes[b][0],nodes[a][1]-nodes[b][1]);if(v<dist[b]){dist[b]=v;prev[b]=a;}}}if(!isFinite(dist.at(-1)))return null;let p=nodes.length-1,out=[];while(p!==0){out.unshift(nodes[p]);p=prev[p];}return out;}

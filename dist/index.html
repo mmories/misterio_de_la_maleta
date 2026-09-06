@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101719"><meta name="description" content="El misterio de la maleta marrón. Una aventura gráfica de Julito en Bilbao, octubre de 1992."><title>El misterio de la maleta marrón</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<main id="shell">
+<header class="topbar"><span class="edition">CMD <span>AVENTURAS</span></span><span id="location">BILBAO · OCTUBRE DE 1992</span><div class="settings"><button id="music" aria-pressed="true" title="Activar o desactivar música">MÚSICA SÍ</button><button id="sound" aria-pressed="true" title="Activar o desactivar efectos">SONIDO SÍ</button><button id="help" title="Cómo jugar">?</button></div></header>
+<section id="game" aria-label="El misterio de la maleta marrón">
+<div id="scene">
+<canvas id="canvas" width="960" height="600" aria-label="Escenario del juego"></canvas>
+<div id="hotspots" aria-label="Objetos del escenario"></div>
+<div id="title" class="overlay">
+<div class="chapter">UNA AVENTURA DE JULITO</div><h1><span>EL MISTERIO DE LA</span>MALETA<br><em>MARRÓN</em></h1><p class="subtitle">EN EL COLEGIO MAYOR DEUSTO</p><div class="title-rule"></div><p class="date">Bilbao, octubre de 1992</p><div class="title-buttons"><button id="start" disabled>CARGANDO…</button><button id="credits">CRÉDITOS</button></div><p class="episode">EPISODIO 0 · LA LLEGADA</p>
+</div>
+<div id="speech" hidden aria-live="polite"><span id="speaker"></span><p id="line"></p><button id="next" aria-label="Continuar diálogo">CONTINUAR ▸</button></div>
+<div id="choices" hidden aria-label="Respuestas de Julito"></div>
+<div id="card" hidden></div>
+<div id="transition" hidden><span id="transition-text"></span></div>
+<button id="skip" hidden>SALTAR INTRO · ESC</button>
+<div id="toast" role="status" hidden></div>
+</div>
+<div id="controls"><div id="sentence" aria-live="polite">Una maleta. Una llave. Un buen comienzo.</div><div class="console"><div id="verbs" aria-label="Verbos"></div><div class="inventory"><div class="inventory-label">INVENTARIO <span id="count">01</span></div><div id="items"></div></div></div></div>
+</section>
+<footer><span id="hint">Una aventura para jugar sin prisa.</span><button id="show-hotspots">ESPACIO · OBJETOS</button></footer>
+</main>
+<dialog id="modal"><div id="modal-body"></div><button id="close-modal">VOLVER</button></dialog>
+<script type="module" src="game.js"></script>
+</body></html>

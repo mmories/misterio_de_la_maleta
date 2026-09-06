@@ -1,0 +1,1 @@
+{"name":"maleta-marron","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite","check":"node --check dist/game.js && node --check dist/audio.js && node --check dist/data.js","start":"vite --host 0.0.0.0"},"devDependencies":{"vite":"7.1.7"}}

@@ -1,0 +1,96 @@
+# El misterio de la maleta marrón
+
+Demo de aventura gráfica point-and-click. Bilbao, octubre de 1994. Idea y personajes de Mario.
+
+## Jugar
+
+La carpeta `dist/` es la versión completa lista para publicar; no necesita compilación, servidor de aplicación, base de datos ni servicios externos.
+
+Con Python 3:
+
+```bash
+python -m http.server 8080 --directory dist
+```
+
+Abrir `http://localhost:8080`.
+
+Para desarrollo con recarga automática, con Node.js 22 o superior:
+
+```bash
+npm ci
+npm run dev
+```
+
+No abrir `index.html` directamente mediante `file://`: los módulos JavaScript requieren un servidor HTTP.
+
+## Contenido
+
+- Pantalla de título, créditos y ayuda.
+- Cinemática con un Passat Variant gris, Julito y su maleta.
+- Recepción basada en el último fondo aportado, con periódicos adaptados.
+- Pedro, diálogo ramificado, llave 310 y pista de la maleta.
+- Prim, pastor alemán residente en recepción: mirar, hablar, acariciar (`USAR Prim`) y mostrar la maleta.
+- Quince zonas interactivas y nueve verbos clásicos.
+- Periódicos independientes: El Correo, El Mundo, ABC y Marca.
+- Inventario y combinaciones de objetos con personajes o escenario.
+- Ascensor bloqueado narrativamente hasta recibir la llave y final de demo.
+- Música sintética original y efectos generados con Web Audio.
+
+La duración depende de la exploración y lectura. El recorrido mínimo es corto; leer las conversaciones y examinar el vestíbulo está pensado para unos 5–10 minutos.
+
+## Controles
+
+Seleccionar verbo y objeto. El personaje camina antes de actuar. Pulsar sobre el suelo para caminar; doble clic acelera el movimiento. Espacio o el botón Objetos muestra las zonas interactivas. Pulsar el diálogo revela el texto; pulsar de nuevo avanza. Enter también avanza. Esc salta la introducción, cierra una portada o abandona las opciones de conversación. `USAR` o `DAR` + objeto de inventario + destino forma una combinación. Los periódicos pueden devolverse usando el periódico del inventario con la mesa de periódicos.
+
+El clic inicial desbloquea audio. Música y efectos tienen controles independientes. No hay voces grabadas. La partida se reinicia al recargar: esta versión no guarda progreso.
+
+## Arquitectura
+
+- `dist/index.html`: estructura y controles accesibles.
+- `dist/style.css`: presentación, consola y adaptación a pantallas pequeñas.
+- `dist/game.js`: escenas, animación, composición de sprites, diálogo e interacciones.
+- `dist/data.js`: verbos, hotspots, diálogos, estado inicial y navegación mediante grafo de visibilidad.
+- `dist/audio.js`: secuenciador de música original y efectos.
+- `dist/assets/`: todos los gráficos locales.
+- `vite.config.js`: servidor de desarrollo; no interviene en la versión publicada.
+
+El lienzo usa coordenadas 960 × 600 y escalado sin suavizado. La composición de escena más consola aproxima el formato clásico 4:3. Los fondos de alta resolución conservan el pixel art suministrado; no se aplica una conversión destructiva a 320 × 200. Las hojas de sprites se recortan y se elimina el fondo claro por relleno desde los bordes en tiempo de carga, preservando los contornos de los personajes.
+
+Los hotspots declaran rectángulo visible y punto de aproximación. El grafo de visibilidad comprueba segmentos dentro de una zona caminable para evitar muebles. Para cambiar de fondo, revisar los rectángulos, puntos y zona caminable de `data.js` y las máscaras del mostrador de `game.js`.
+
+## Publicar gratis
+
+La salida es compatible con cualquier alojamiento estático. Una opción sencilla es GitHub Pages:
+
+1. Crear un repositorio propio.
+2. Subir **el contenido de `dist/`** a la raíz de la rama principal.
+3. En Settings → Pages, elegir desplegar desde esa rama y carpeta raíz.
+4. Abrir la dirección que GitHub indique.
+
+No se necesitan secretos ni configuración del juego. Todos los enlaces de recursos son relativos, de modo que también funciona alojado bajo un subdirectorio. En otros proveedores estáticos, usar `dist` como directorio de publicación y dejar vacío el comando de build.
+
+La publicación de esta entrega en Sites se realiza por separado. Su acceso inicial es privado; para enviar la demo a otras personas debe ampliarse el acceso o publicarse `dist/` en un alojamiento propio.
+
+## Assets
+
+| Archivo | Procedencia / uso |
+|---|---|
+| exterior.png | Fondo del edificio aportado por Mario |
+| reception.png | Última recepción aportada por Mario; edición limitada a cuatro periódicos |
+| julito-walk.png | Hoja `sprite julito 1.png`, aportada por Mario; marcha frontal, trasera y lateral |
+| julito-actions.png | Hoja `sprites julito 2.png`, aportada por Mario; gestos y objetos |
+| pedro-actions.png | Hoja `sprite pedro 1.png`, aportada por Mario; recepción, conversación y llaves |
+| pedro-walk.png | Hoja `sprties pedro 2.png`, aportada por Mario; conservada para ampliaciones |
+| passat.png | Sprite creado para la demo: Passat Variant B3 gris |
+| prim.png | Sprite creado para la demo: Prim en reposo y alerta |
+
+Las portadas son ficticias, no reproducciones de ejemplares históricos. El gag de «La Fábrica» sigue el guion solicitado; no se presenta como un titular verificado de 1994. No se emplea música ni arte extraído de Monkey Island.
+
+## Siguiente episodio
+
+1. Tercera planta, pasillo y habitación 310.
+2. Primer puzle real vinculado con la maleta y el olfato de Prim.
+3. Otros colegiales, tablón de actividades y comedor.
+4. Guardar/cargar progreso y opciones de velocidad de texto.
+5. Más fotogramas de puertas, coche y acciones de mobiliario.
+6. Comprobar manualmente Firefox, Edge, Safari y dispositivos táctiles reales.
