@@ -46,14 +46,14 @@
           <input id="nickname-input" maxlength="18" autocomplete="off" value="${currentNickname()}" aria-label="Nuevo mote">
           <button id="nickname-accept" type="button">GUARDAR</button>
         </div>
-        <p class="nickname-note">Se conserva en este navegador. Al guardarlo, la partida se recarga en el mismo punto para que todos los diálogos usen el nuevo mote.</p>
+        <p class="nickname-note">Se conserva en este navegador. Al guardarlo se recarga una sola vez; después pulsa CONTINUAR para volver a la partida con el nuevo mote.</p>
         <button id="nickname-cancel" type="button">CANCELAR</button>
       </form>`;
     const holder = dialog.querySelector('.nickname-presets');
     const apply = value => {
       const nickname = writeNickname(value);
-      sessionStorage.setItem('misterio-maleta:resume-after-nick', '1');
       sessionStorage.setItem('misterio-maleta:nick-toast', nickname);
+      sessionStorage.removeItem('misterio-maleta:resume-after-nick');
       location.reload();
     };
     ['Julito','Topo','El Riojano'].forEach(name => {
@@ -100,11 +100,6 @@
       if (newGame) newGame.hidden = true;
     }
     bindResume(start);
-
-    if (sessionStorage.getItem('misterio-maleta:resume-after-nick') && canContinue && !start.disabled) {
-      sessionStorage.removeItem('misterio-maleta:resume-after-nick');
-      setTimeout(() => start.click(), 40);
-    }
   }
 
   function refineDialogueText() {
@@ -199,6 +194,7 @@
 
   const observer = new MutationObserver(decorateStart);
   const boot = () => {
+    try { sessionStorage.removeItem('misterio-maleta:resume-after-nick'); } catch {}
     enhanceUI();
     const start = document.getElementById('start');
     if (start) observer.observe(start, {attributes:true, childList:true});
