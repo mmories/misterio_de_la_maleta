@@ -3,7 +3,7 @@ import {MISSION} from './content.js';
 const SAVE_KEY='misterio-maleta:partida-v1';
 const $=id=>document.getElementById(id);
 const readSave=()=>{try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch{return null;}};
-const currentNickname=()=>{try{return localStorage.getItem('misterio-maleta:mote')||readSave()?.state?.nickname||'Julito';}catch{return readSave()?.state?.nickname||'Julito';}};
+const currentNickname=()=>{try{return readSave()?.state?.nickname||localStorage.getItem('misterio-maleta:mote')||'Julito';}catch{return readSave()?.state?.nickname||'Julito';}};
 
 let previousNickname=null;
 window.addEventListener('maleta-set-nickname',event=>{
@@ -55,7 +55,6 @@ function ensureNicknameChoice(){
   b.onclick=event=>{
     event.preventDefault();
     event.stopPropagation();
-    choices.hidden=true;
     window.MaletaNickname?.open?.();
   };
   choices.insertBefore(b,choices.lastElementChild||null);
