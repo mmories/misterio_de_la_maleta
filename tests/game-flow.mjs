@@ -18,5 +18,6 @@ await run(()=>game.getChoices().find(b=>b.textContent.includes('Eso es todo')).o
 game.selectVerb('COGER');await run(()=>game.interact(h('marca')));await run(()=>game.interact(h('marca')));assert.deepEqual([...game.getState().tookPapers],['marca']);assert.equal(game.getState().hasMarca,true);
 game.select('USAR','marca');await run(()=>game.interact(h('correo')));assert.equal(game.getState().hasMarca,false);assert.equal(game.getState().tookPapers.length,0);
 game.select('USAR','bag');await run(()=>game.interact(h('prim')));assert.equal(game.getState().hasKey310,true);
+game.selectVerb('USAR');await run(()=>game.interact(h('sofa')));assert.equal(game.getState().hasTobacco,true);assert.ok(game.getState().collectedItems.includes('tobacco'));
 game.selectVerb('USAR');await run(()=>game.interact(h('elevator')));assert.equal(game.getState().calledElevator,true);
-console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; elevator gate; key assignment; no duplicate key; paper pickup, duplicate pickup and return; Prim combination; ending.');
+console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; key and tobacco elevator gates; mission tracking; paper pickup, duplicate pickup and return; Prim combination; ending.');

@@ -26,14 +26,18 @@ No abrir `index.html` directamente mediante `file://`: los módulos JavaScript r
 ## Contenido
 
 - Pantalla de título, créditos y ayuda.
-- Cinemática con un Passat Variant gris, Julito y su maleta.
+- Cinemática en plano fijo: Passat Variant gris detenido, motor que se apaga y aparición de Julito con su maleta.
 - Recepción basada en el último fondo aportado, con periódicos adaptados.
 - Pedro, diálogo ramificado, llave 310 y pista de la maleta.
 - Prim, pastor alemán residente en recepción: mirar, hablar, acariciar (`USAR Prim`) y mostrar la maleta.
-- Quince zonas interactivas y nueve verbos clásicos.
+- Veintiuna zonas interactivas y nueve verbos clásicos.
 - Periódicos independientes: El Correo, El Mundo, ABC y Marca.
 - Inventario y combinaciones de objetos con personajes o escenario.
-- Ascensor bloqueado narrativamente hasta recibir la llave y final de demo.
+- Introducción de misión y medidor de exploración por carteles, usos, diálogos y objetos.
+- Ascensor bloqueado narrativamente hasta conseguir la llave y encontrar el paquete de tabaco.
+- Menú de escenas con contraseña progresiva; la siguiente escena se desbloquea con `POTELE`.
+- Prim animado con ciclos de respiración, atención, orejas y cola.
+- Créditos animados con desplazamiento, profundidad y acabado VGA.
 - Música sintética original y efectos generados con Web Audio.
 
 La duración depende de la exploración y lectura. El recorrido mínimo es corto; leer las conversaciones y examinar el vestíbulo está pensado para unos 5–10 minutos.
@@ -42,7 +46,7 @@ La duración depende de la exploración y lectura. El recorrido mínimo es corto
 
 Seleccionar verbo y objeto. El personaje camina antes de actuar. Pulsar sobre el suelo para caminar; doble clic acelera el movimiento. Espacio o el botón Objetos muestra las zonas interactivas. Pulsar el diálogo revela el texto; pulsar de nuevo avanza. Enter también avanza. Esc salta la introducción, cierra una portada o abandona las opciones de conversación. `USAR` o `DAR` + objeto de inventario + destino forma una combinación. Los periódicos pueden devolverse usando el periódico del inventario con la mesa de periódicos.
 
-El clic inicial desbloquea audio. Música y efectos tienen controles independientes. No hay voces grabadas. La partida se reinicia al recargar: esta versión no guarda progreso.
+El clic inicial desbloquea audio. Música y efectos tienen controles independientes. No hay voces grabadas. La contraseña de escena obtenida al final puede reutilizarse desde el menú `ESCENAS`.
 
 ## Arquitectura
 
@@ -82,7 +86,8 @@ La publicación de esta entrega en Sites se realiza por separado. Su acceso inic
 | pedro-actions.png | Hoja `sprite pedro 1.png`, aportada por Mario; recepción, conversación y llaves |
 | pedro-walk.png | Hoja `sprties pedro 2.png`, aportada por Mario; conservada para ampliaciones |
 | passat.png | Sprite creado para la demo: Passat Variant B3 gris |
-| prim.png | Sprite creado para la demo: Prim en reposo y alerta |
+| prim.png | Sprite original de Prim en reposo y alerta |
+| prim-idle-v2.png | Hoja animada de ocho fotogramas para respiración y reacción de Prim |
 
 Las portadas son ficticias, no reproducciones de ejemplares históricos. El gag de «La Fábrica» sigue el guion solicitado; no se presenta como un titular verificado de 1994. No se emplea música ni arte extraído de Monkey Island.
 
