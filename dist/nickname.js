@@ -74,7 +74,7 @@
     setTimeout(() => input.select(), 0);
   }
 
-  function bindResume(start) {
+  function bindResume() {
     if (resumeBound) return;
     resumeBound = true;
     document.addEventListener('click', event => {
@@ -91,7 +91,7 @@
     const canContinue = Boolean(save?.state?.introCompleted);
     if (!start) return;
     if (canContinue) {
-      start.textContent = 'CONTINUAR';
+      if (start.textContent !== 'CONTINUAR') start.textContent = 'CONTINUAR';
       start.dataset.resume = 'true';
       if (newGame) newGame.hidden = false;
     } else {
@@ -99,7 +99,7 @@
       if (!start.disabled && start.textContent === 'CONTINUAR') start.textContent = 'COMENZAR';
       if (newGame) newGame.hidden = true;
     }
-    bindResume(start);
+    bindResume();
   }
 
   function refineDialogueText() {
@@ -175,8 +175,8 @@
       });
       titleButtons.insertBefore(fresh, document.getElementById('credits'));
     }
-    decorateStart();
     bindDialogueRefinements();
+    bindResume();
   }
 
   document.addEventListener('click', event => {
@@ -192,13 +192,21 @@
     setTimeout(() => { status.textContent = 'GUARDADO'; status.classList.remove('saved-flash'); }, 1100);
   });
 
-  const observer = new MutationObserver(decorateStart);
   const boot = () => {
     try { sessionStorage.removeItem('misterio-maleta:resume-after-nick'); } catch {}
     enhanceUI();
     const start = document.getElementById('start');
-    if (start) observer.observe(start, {attributes:true, childList:true});
+    if (!start) return;
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts++;
+      if (!start.disabled || attempts >= 100) {
+        clearInterval(timer);
+        decorateStart();
+      }
+    }, 50);
   };
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 })();
