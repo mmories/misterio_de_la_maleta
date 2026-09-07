@@ -72,6 +72,7 @@ function checkHundredPercent(){
   const save=readSave(),state=save?.state;
   if(!state||state.pedro100Surprise||missionPercent(state)<100)return;
   window.dispatchEvent(new CustomEvent('maleta-set-state-flag',{detail:{key:'pedro100Surprise',value:true}}));
+  window.dispatchEvent(new CustomEvent('maleta-set-state-flag',{detail:{key:'hasMasterKey',value:true}}));
   surpriseQueued=true;
   queueSurprise(0);
 }
@@ -83,7 +84,7 @@ function queueSurprise(attempt){
   surpriseQueued=false;
   const body=$('modal-body');
   if(!body||!modal)return;
-  body.innerHTML=`<div class="mission-report"><small>EXPLORACIÓN COMPLETA · 100%</small><h2>Pedro tiene algo que decirte</h2><p><b>Pedro:</b> ${currentNickname()}, he visto gente tardar cuatro años en enterarse de menos cosas que tú en una tarde.</p><p><b>${currentNickname()}:</b> ¿Eso es un cumplido?</p><p><b>Pedro:</b> No te acostumbres.</p><hr><p>Pedro abre un cajón, rebusca entre llaves y papeles y te entrega una pequeña ficha metálica.</p><p><b>Pedro:</b> Estaba con la llave de la 310. Pensaba dártela cuando demostrases que mirabas antes de preguntar.</p><p><b>${currentNickname()}:</b> ¿Y para qué sirve?</p><p><b>Pedro:</b> Si lo supiera, no sería una sorpresa.</p><small>Has descubierto todo lo que esconde la recepción. O todo lo que Pedro admite que esconde.</small></div>`;
+  body.innerHTML=`<div class="mission-report"><small>EXPLORACIÓN COMPLETA · 100%</small><h2>Pedro tiene algo que decirte</h2><p><b>Pedro:</b> ${currentNickname()}, he visto gente tardar cuatro años en enterarse de menos cosas que tú en una tarde.</p><p><b>${currentNickname()}:</b> ¿Eso es un cumplido?</p><p><b>Pedro:</b> No te acostumbres.</p><hr><p>Pedro mira a ambos lados, abre un cajón de la conserjería y saca una llave distinta de todas las demás.</p><p><b>Pedro:</b> Toma. Es la llave maestra del Colegio Mayor.</p><p><b>${currentNickname()}:</b> ¿La que abre todas las habitaciones?</p><p><b>Pedro:</b> Todas. Y precisamente por eso no se la doy a cualquiera.</p><p><b>${currentNickname()}:</b> ¿Y a mí sí?</p><p><b>Pedro:</b> Has conseguido enterarte de todo lo que pasa en esta recepción. Ahora intenta no enterarte de demasiado.</p><hr><p><b>OBJETO ESPECIAL CONSEGUIDO: LLAVE MAESTRA</b></p><small>Recompensa exclusiva por completar el 100% de la exploración. La llave quedará disponible en las próximas escenas.</small></div>`;
   modal.showModal();
 }
 
