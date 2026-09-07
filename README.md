@@ -30,19 +30,24 @@ No abrir `index.html` directamente mediante `file://`: los módulos JavaScript r
 - Recepción basada en el último fondo aportado, con periódicos adaptados.
 - Pedro, diálogo ramificado, llave 310 y pista de la maleta.
 - Prim, pastor alemán residente en recepción: mirar, hablar, acariciar (`USAR Prim`) y mostrar la maleta.
-- Veintiuna zonas interactivas y nueve verbos clásicos.
+- Veintitrés zonas interactivas y seis verbos contextuales. `USAR` abre, cierra o activa cada objeto según corresponda.
 - Periódicos independientes: El Correo, El Mundo, ABC y Marca.
 - Inventario y combinaciones de objetos con personajes o escenario.
+- Felpudo interactivo con una carta de Empi para la habitación 310, conservada en el inventario como pista para el misterio.
+- Conversación opcional con Pedro sobre los motes de los nuevos, incluido «Topo».
 - Introducción de misión y medidor de exploración por carteles, usos, diálogos y objetos.
 - Ascensor bloqueado narrativamente hasta conseguir la llave y encontrar el paquete de tabaco.
 - Menú de escenas con contraseña progresiva; la siguiente escena se desbloquea con `POTELE`.
-- Prim animado con ciclos de respiración, atención, orejas y cola.
+- Julito con aceleración y frenado progresivos, perspectiva por profundidad, ocho fases laterales coherentes, balance corporal y maleta estable en la misma mano.
+- Pedro y Prim con ciclos de reposo de duración irregular, respiración, miradas y reacciones menos mecánicas.
 - Créditos animados con desplazamiento, profundidad y acabado VGA.
-- Música sintética original y efectos generados con Web Audio.
+- Música sintética original y efectos generados con Web Audio: tres ambientes, progresiones de ocho compases, cuatro variaciones de frase y una fanfarria futbolera original cuando aparece el gag del Logroñés.
 
 La duración depende de la exploración y lectura. El recorrido mínimo es corto; leer las conversaciones y examinar el vestíbulo está pensado para unos 5–10 minutos.
 
 ## Controles
+
+- El inventario se abre en una pantalla independiente desde **ABRIR MOCHILA** o con la tecla **I**. En móvil ocupa toda la pantalla para que los objetos sean fáciles de tocar.
 
 Seleccionar verbo y objeto. El personaje camina antes de actuar. Pulsar sobre el suelo para caminar; doble clic acelera el movimiento. Espacio o el botón Objetos muestra las zonas interactivas. Pulsar el diálogo revela el texto; pulsar de nuevo avanza. Enter también avanza. Esc salta la introducción, cierra una portada o abandona las opciones de conversación. `USAR` o `DAR` + objeto de inventario + destino forma una combinación. Los periódicos pueden devolverse usando el periódico del inventario con la mesa de periódicos.
 
@@ -52,9 +57,11 @@ El clic inicial desbloquea audio. Música y efectos tienen controles independien
 
 - `dist/index.html`: estructura y controles accesibles.
 - `dist/style.css`: presentación, consola y adaptación a pantallas pequeñas.
-- `dist/game.js`: escenas, animación, composición de sprites, diálogo e interacciones.
+- `dist/game.js`: dirección de escenas, composición, diálogo e interacciones.
+- `dist/animation.js`: perspectiva, aceleración, selección de fotogramas y movimiento secundario.
+- `dist/content.js`: objetivos, métricas de misión y metadatos de contenido.
 - `dist/data.js`: verbos, hotspots, diálogos, estado inicial y navegación mediante grafo de visibilidad.
-- `dist/audio.js`: secuenciador de música original y efectos.
+- `dist/audio.js`: secuenciador dinámico, fanfarria original y efectos.
 - `dist/assets/`: todos los gráficos locales.
 - `vite.config.js`: servidor de desarrollo; no interviene en la versión publicada.
 
@@ -81,15 +88,17 @@ La publicación de esta entrega en Sites se realiza por separado. Su acceso inic
 |---|---|
 | exterior.png | Fondo del edificio aportado por Mario |
 | reception.png | Última recepción aportada por Mario; edición limitada a cuatro periódicos |
-| julito-walk.png | Hoja `sprite julito 1.png`, aportada por Mario; marcha frontal, trasera y lateral |
+| julito-walk.png | Hoja `sprite julito 1.png`, aportada por Mario; apoyo frontal y trasero |
+| julito-walk-v3.png | Hoja de ocho fases laterales, recortada con alfa y usada para el movimiento fluido |
 | julito-actions.png | Hoja `sprites julito 2.png`, aportada por Mario; gestos y objetos |
 | pedro-actions.png | Hoja `sprite pedro 1.png`, aportada por Mario; recepción, conversación y llaves |
 | pedro-walk.png | Hoja `sprties pedro 2.png`, aportada por Mario; conservada para ampliaciones |
 | passat.png | Sprite creado para la demo: Passat Variant B3 gris |
 | prim.png | Sprite original de Prim en reposo y alerta |
 | prim-idle-v2.png | Hoja animada de ocho fotogramas para respiración y reacción de Prim |
+| pedro-idle-v2.png | Hoja animada de ocho fotogramas para respiración, parpadeo, llaves y cambios de peso |
 
-Las portadas son ficticias, no reproducciones de ejemplares históricos. El gag de «La Fábrica» sigue el guion solicitado; no se presenta como un titular verificado de 1994. No se emplea música ni arte extraído de Monkey Island.
+Las portadas son ficticias, no reproducciones de ejemplares históricos. El gag de «La Fábrica» sigue el guion solicitado; no se presenta como un titular verificado de 1994. No se emplea música ni arte extraído de Monkey Island. La fanfarria del Logroñés es una composición procedural original y no una copia de una grabación o melodía comercial.
 
 ## Siguiente episodio
 
