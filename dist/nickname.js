@@ -10,13 +10,8 @@
 
   function writeNickname(value) {
     const nickname = clean(value) || DEFAULT_NAME;
-    let save = readSave();
-    if (!save || !save.state) save = {version:1,savedAt:Date.now(),state:{introCompleted:false,nickname}};
-    save.version = 1;
-    save.savedAt = Date.now();
-    save.state.nickname = nickname;
-    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
     localStorage.setItem(OLD_NICK_KEY, nickname);
+    window.dispatchEvent(new CustomEvent('maleta-set-nickname', {detail:{nickname}}));
     return nickname;
   }
 
@@ -43,15 +38,15 @@
           <input id="nickname-input" maxlength="18" autocomplete="off" value="${currentNickname()}" aria-label="Nuevo mote">
           <button id="nickname-accept" type="button">GUARDAR</button>
         </div>
-        <p class="nickname-note">El mote se conserva en este navegador.</p>
+        <p class="nickname-note">El cambio se aplica inmediatamente y se conserva en esta partida.</p>
         <button id="nickname-cancel" type="button">CANCELAR</button>
       </form>`;
 
     const apply = value => {
-      writeNickname(value);
+      const nickname = writeNickname(value);
       dialog.close();
       dialog.remove();
-      location.reload();
+      window.dispatchEvent(new CustomEvent('maleta-nickname-changed', {detail:{nickname}}));
     };
 
     const holder = dialog.querySelector('.nickname-presets');
@@ -84,13 +79,8 @@
   }
 
   function decorateStableUI() {
-    const settings = document.querySelector('.settings');
-    if (settings && !document.getElementById('nickname-settings')) {
-      const nick = makeButton('MOTE', 'nickname-settings');
-      nick.title = 'Cambiar mote del protagonista';
-      nick.addEventListener('click', openNicknameDialog);
-      settings.insertBefore(nick, document.getElementById('help'));
-    }
+    const oldNicknameButton = document.getElementById('nickname-settings');
+    if (oldNicknameButton) oldNicknameButton.remove();
 
     const titleButtons = document.querySelector('.title-buttons');
     if (titleButtons && !document.getElementById('new-game')) {
@@ -131,9 +121,10 @@
     if (event.target.closest?.('#again')) clearProgress();
   }, true);
 
+  window.MaletaNickname = {open: openNicknameDialog, current: currentNickname};
+
   const boot = () => {
     decorateStableUI();
-    // One-shot checks only. They cannot generate a feedback loop or block game.js.
     setTimeout(updateStartOnce, 300);
     setTimeout(updateStartOnce, 1200);
   };
