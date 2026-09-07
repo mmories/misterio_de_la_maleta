@@ -41,12 +41,15 @@ locked:[['Julito','El ascensor está listo. Yo no.'],['Julito','Averiguar mi hab
 };
 
 export const SAVE_KEY='misterio-maleta:partida-v1';
-const freshState=()=>({introCompleted:false,talkedToPedro:false,talkedToSenior:false,nickname:null,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,inspectedTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']});
+const freshState=()=>({introCompleted:false,talkedToPedro:false,talkedToSenior:false,nickname:null,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,inspectedTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,pedro100Surprise:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']});
 function safeStorage(){try{return globalThis.localStorage||null;}catch{return null;}}
 function readSaved(){const storage=safeStorage();if(!storage)return null;try{const saved=JSON.parse(storage.getItem(SAVE_KEY)||'null');return saved&&saved.version===1&&saved.state?saved:null;}catch{return null;}}
 function writeSaved(state){const storage=safeStorage();if(!storage)return;try{const plain={};for(const [key,value] of Object.entries(state))plain[key]=Array.isArray(value)?[...value]:value;storage.setItem(SAVE_KEY,JSON.stringify({version:1,savedAt:Date.now(),state:plain}));globalThis.dispatchEvent?.(new CustomEvent('maleta-save',{detail:{savedAt:Date.now()}}));}catch{}}
 function watchedArray(values,onChange){return new Proxy([...values],{set(target,prop,value){target[prop]=value;onChange();return true;},deleteProperty(target,prop){delete target[prop];onChange();return true;}});}
-function observableState(source){let proxy;const onChange=()=>writeSaved(proxy);for(const [key,value] of Object.entries(source))if(Array.isArray(value))source[key]=watchedArray(value,onChange);proxy=new Proxy(source,{set(target,prop,value){target[prop]=Array.isArray(value)?watchedArray(value,onChange):value;onChange();return true;},deleteProperty(target,prop){delete target[prop];onChange();return true;}});return proxy;}
+let activeState=null;
+function observableState(source){let proxy;const onChange=()=>writeSaved(proxy);for(const [key,value] of Object.entries(source))if(Array.isArray(value))source[key]=watchedArray(value,onChange);proxy=new Proxy(source,{set(target,prop,value){target[prop]=Array.isArray(value)?watchedArray(value,onChange):value;onChange();return true;},deleteProperty(target,prop){delete target[prop];onChange();return true;}});activeState=proxy;return proxy;}
+globalThis.addEventListener?.('maleta-set-nickname',event=>{const nickname=String(event.detail?.nickname||'').trim();if(activeState&&nickname)activeState.nickname=nickname;});
+globalThis.addEventListener?.('maleta-set-state-flag',event=>{const key=event.detail?.key;if(activeState&&key)activeState[key]=event.detail?.value;});
 export function hasSavedGame(){return Boolean(readSaved()?.state?.introCompleted);}
 export function getSavedGame(){return readSaved();}
 export function clearSavedGame(){const storage=safeStorage();try{storage?.removeItem(SAVE_KEY);}catch{}}
