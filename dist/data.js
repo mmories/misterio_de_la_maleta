@@ -15,6 +15,7 @@ export const HOTSPOTS=[
 {id:'directory',name:'directorio',rect:[544,171,128,57],at:[570,334],look:'ASCENSORES, HABITACIONES, BIBLIOTECA. Una flecha hacia arriba y tres formas distintas de perderse.'},
 {id:'sofa',name:'sofá',rect:[740,285,210,103],at:[686,367],look:'Skay marrón. El material oficial de todas las instituciones españolas. Los cojines están sospechosamente abultados; alguien ha escondido algo ahí o el sofá guarda rencor.'},
 {id:'radiator',name:'radiador',rect:[736,263,62,44],at:[686,367],look:'Un radiador de hierro. En Bilbao esto no es mobiliario: es infraestructura crítica.'},
+{id:'phoneBooths',name:'pasillo de las cabinas',rect:[707,205,34,57],at:[683,340],look:'Junto al radiador, el pasillo gira hacia la derecha. Se oye una conversación telefónica que parece haber empezado en septiembre.'},
 {id:'correo',name:'El Correo',rect:[672,386,86,36],at:[642,458],look:'El periódico regional. Ideal para enterarme de dónde he venido a meterme.'},
 {id:'mundo',name:'El Mundo',rect:[758,386,77,32],at:[642,458],look:'El Mundo. Cinco años y ya parece que lo sabe todo.'},
 {id:'abc',name:'ABC',rect:[713,420,82,30],at:[642,458],look:'ABC. Tiene más letras que fotos. Y pesa como una asignatura.'},
@@ -37,7 +38,7 @@ suitcase:[['Julito','¿Pasa algo con mi maleta?'],['Pedro','No lo sé. ¿Qué ll
 after:[['Julito','¿Alguna cosa más?'],['Pedro','Tercera planta, cuando estés preparado. Aunque tienes cara de necesitar sentarte un momento.']],
 locked:[['Julito','El ascensor está listo. Yo no.'],['Julito','Averiguar mi habitación y conseguir la llave debo.'],['Julito','Me ha salido el Yoda que llevo dentro. La maleta, en cambio, sigue hablando en kilos.'],['Julito','Pedro parece saber dónde vive todo el mundo. Será mejor preguntarle.']]
 };
-export function newState(){return {introCompleted:false,talkedToPedro:false,pedroPushed:false,primPushed:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']};}
+export function newState(){return {introCompleted:false,talkedToPedro:false,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']};}
 export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[641,429],[781,599],[0,599]];
 export const WALK_NODES=[[229,551],[355,445],[460,465],[510,400],[530,360],[570,334],[606,287],[683,340],[686,367],[642,458],[400,404]];
 export function pointInPolygon(p,poly=WALK_POLYGON){let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>p[1])!==(b[1]>p[1]))&&(p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]))yes=!yes;}return yes && !(p[0]>205&&p[0]<337&&p[1]>394&&p[1]<447);}
