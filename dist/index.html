@@ -8,7 +8,7 @@
 <canvas id="canvas" width="960" height="600" aria-label="Escenario del juego"></canvas>
 <div id="hotspots" aria-label="Objetos del escenario"></div>
 <div id="title" class="overlay">
-<div class="chapter">UNA AVENTURA DE JULITO</div><h1><span>EL MISTERIO DE LA</span>MALETA<br><em>MARRÓN</em></h1><p class="subtitle">EN EL COLEGIO MAYOR DEUSTO</p><div class="title-rule"></div><p class="date">Bilbao, octubre de 1994</p><div class="title-buttons"><button id="start" disabled>CARGANDO…</button><button id="credits">CRÉDITOS</button></div><p class="episode">EPISODIO 0 · LA LLEGADA</p>
+<div class="chapter">UNA AVENTURA DE JULITO</div><h1><span>EL MISTERIO DE LA</span>MALETA<br><em>MARRÓN</em></h1><p class="subtitle">EN EL COLEGIO MAYOR DEUSTO</p><div class="title-rule"></div><p class="date">Bilbao, octubre de 1994</p><div class="title-buttons"><button id="start" disabled>CARGANDO…</button><button id="continue-game" hidden disabled>CONTINUAR</button><button id="credits">CRÉDITOS</button></div><p class="episode">EPISODIO 0 · LA LLEGADA</p>
 </div>
 <div id="speech" hidden aria-live="polite"><span id="speaker"></span><p id="line"></p><button id="next" aria-label="Continuar diálogo">CONTINUAR ▸</button></div>
 <div id="choices" hidden aria-label="Respuestas de Julito"></div>
@@ -21,11 +21,9 @@
 </div>
 <div id="controls"><div id="sentence" aria-live="polite">Una maleta. Una llave. Un buen comienzo.</div><div class="console"><div id="verbs" aria-label="Verbos"></div><div class="inventory"><div class="inventory-label">INVENTARIO <span id="count">01</span></div><button id="open-inventory" type="button" aria-haspopup="dialog"><span id="inventory-summary">Nada seleccionado</span><strong>ABRIR MOCHILA <kbd>I</kbd></strong></button><div id="items" hidden aria-hidden="true"></div></div></div></div>
 </section>
-<footer><span id="hint">Una aventura para jugar sin prisa.</span><button id="show-hotspots">ESPACIO · OBJETOS</button></footer>
+<footer><span id="hint">Una aventura para jugar sin prisa.</span><button id="ask-hint" hidden>PISTAS</button><button id="show-hotspots">ESPACIO · OBJETOS</button></footer>
 </main>
 <dialog id="modal"><div id="modal-body"></div><button id="close-modal">VOLVER</button></dialog>
 <dialog id="inventory-modal" aria-labelledby="inventory-title"><div class="inventory-screen"><header><div><small>PERTENENCIAS DE JULITO</small><h2 id="inventory-title">Inventario</h2></div><span><b id="inventory-total">01</b> OBJETOS</span></header><p id="inventory-instruction">Elige un objeto para examinarlo.</p><div id="inventory-grid" role="list"></div><footer><span>Selecciona un objeto y después su destino cuando uses USAR o DAR.</span><button id="close-inventory" type="button">VOLVER AL JUEGO</button></footer></div></dialog>
-<script src="nickname.js"></script>
 <script type="module" src="game.js"></script>
-<script type="module" src="refinements.js"></script>
 </body></html>

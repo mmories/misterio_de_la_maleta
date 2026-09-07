@@ -139,3 +139,10 @@ kbd{font:inherit;border:1px solid #60716e;padding:2px 5px;margin-left:4px;color:
 .rules-view .rules-signature{text-align:right;font:italic 13px Georgia,serif;margin:15px 0 0}
 .rules-view>button{background:#343830;color:#f8e7bd;margin:16px auto 0}
 @media(max-width:620px){.rules-view{padding:10px}.rules-view ol{font-size:10px;line-height:1.25;padding-left:21px}.rules-view li{padding:3px 0}.rules-view .rules-signature{font-size:9px;margin-top:7px}.rules-view>button{font-size:9px;margin-top:7px;padding:7px 10px}}
+/* Keep the extra controls readable on narrow screens. */
+.title-buttons{flex-wrap:wrap;justify-content:center}
+#continue-game{border-color:#d4b675;color:#f3d99e}
+#shell>footer{gap:8px;flex-wrap:wrap}
+#shell>footer #hint{flex:1 1 220px}
+#ask-hint{white-space:nowrap}
+#transition-text>button{margin:8px;font-size:12px}

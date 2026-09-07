@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {newState} from '../dist/data.js';
+import {readSave,writeSave,SAVE_KEY} from '../dist/save.js';
+import {nextHint} from '../dist/hints.js';
+let raw=null;const storage={getItem:()=>raw,setItem:(key,value)=>{assert.equal(key,SAVE_KEY);raw=value;}};
+const state=newState();state.introCompleted=true;state.hasKey310=true;state.nickname='Topo';state.readTopics=['welcome','key'];state.tookPapers=['marca'];
+assert.equal(writeSave(state,storage),true);const restored=readSave(storage);assert.equal(restored.hasKey310,true);assert.equal(restored.hasMarca,true);assert.deepEqual(restored.readTopics,['welcome','key']);
+for(const corrupt of ['{','null','{"version":99,"state":{}}','{"version":1,"state":{"introCompleted":true,"hasKey310":"yes"}}','{"version":1,"state":{"introCompleted":true,"tookPapers":["unknown"]}}']){raw=corrupt;assert.equal(readSave(storage),null);}
+const denied={getItem(){throw new Error('blocked');},setItem(){throw new Error('quota');}};assert.equal(readSave(denied),null);assert.equal(writeSave(state,denied),false);
+Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('SecurityError');}});assert.equal(readSave(),null);assert.equal(writeSave(state),false);delete globalThis.localStorage;
+const hints=newState();assert.equal(nextHint(hints).level,1);assert.equal(nextHint(hints).level,2);assert.equal(nextHint(hints).level,3);assert.equal(nextHint(hints).level,3);
+hints.hasKey310=true;assert.equal(nextHint(hints).id,'tobacco');assert.equal(hints.hintLevels.tobacco,1);hints.hasTobacco=true;assert.equal(nextHint(hints).id,'letter');hints.hasEmpiLetter=true;assert.equal(nextHint(hints).id,'rules');hints.hasRulesBook=true;assert.equal(nextHint(hints).id,'invitation');
+hints.introCompleted=true;writeSave(hints,storage);assert.deepEqual(readSave(storage).hintLevels,hints.hintLevels);
+console.log('PASS: versioned save, corrupted/blocked storage, roundtrip and progressive hints.');
+const store=new Map(),migrationStorage={getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,value)};
+const oldNickname={...newState(),introCompleted:true,nickname:'El Potele',hasKey310:true,hasMasterKey:true,pedro100Surprise:true,tookPapers:['marca'],readTopics:['welcome','key']};
+store.set('misterio-maleta:partida-v1',JSON.stringify({version:1,savedAt:20,state:oldNickname}));
+let migrated=readSave(migrationStorage);assert.equal(migrated.nickname,'El Potele');assert.equal(migrated.hasMasterKey,true);assert.equal(migrated.rewardShown,false,'Old surprise may have been marked but never shown');assert.deepEqual(migrated.readTopics,['welcome','key']);
+assert.equal(writeSave(migrated,migrationStorage),true);assert.equal(JSON.parse(store.get(SAVE_KEY)).version,2);
+store.clear();store.set('maleta-partida-v1',JSON.stringify({version:1,state:{...newState(),introCompleted:true,primTrusted:true,primClueSeen:true,bonusSeen:true,hintLevels:{letter:2}}}));
+migrated=readSave(migrationStorage);assert.equal(migrated.primTrusted,true);assert.equal(migrated.bonusSeen,true);assert.equal(migrated.hintLevels.letter,2);
+store.set('misterio-maleta:partida-v1',JSON.stringify({version:1,savedAt:100,state:oldNickname}));assert.equal(readSave(migrationStorage).nickname,'El Potele','Choose the most recently dated legacy save');
+writeSave({...newState(),introCompleted:true,nickname:'Partida nueva'},migrationStorage);assert.equal(readSave(migrationStorage).nickname,'Partida nueva','Current saves take precedence over legacy state');
+store.set(SAVE_KEY,'broken');assert.equal(readSave(migrationStorage).nickname,'El Potele','A corrupt new save must not prevent recovery from a valid legacy save');
+console.log('PASS: migration from both branches, custom names, master key, hints and recovery precedence.');

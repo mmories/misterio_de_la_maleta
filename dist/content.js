@@ -15,3 +15,12 @@ export const PAPER_INFO={
 };
 
 export const isAnthemLine=text=>/(soy un hincha|himno del Logroñés|riojano de cepa|las riojanas)/i.test(text);
+
+export const MASTER_KEY_DIALOGUE=[
+ ['Pedro','[MOTE], he visto gente tardar cuatro años en enterarse de menos cosas que tú en una tarde.'],
+ ['Julito','¿Eso es un cumplido?'],['Pedro','No te acostumbres.'],
+ ['Pedro','Toma. Es la llave maestra del Colegio Mayor.'],
+ ['Julito','¿La que abre todas las habitaciones?'],['Pedro','Todas. Y precisamente por eso no se la doy a cualquiera.'],
+ ['Julito','¿Y a mí sí?'],
+ ['Pedro','Has conseguido enterarte de todo lo que pasa en esta recepción. Ahora intenta no enterarte de demasiado.']
+];

@@ -103,8 +103,31 @@ El gag de «La Fábrica» sigue el guion solicitado. No se emplea música ni art
 ## Siguiente episodio
 
 1. Tercera planta, pasillo y habitación 310.
-2. Primer puzle real vinculado con la maleta y el olfato de Prim.
+2. Ampliar el puzle de la maleta a partir de la pista de Prim en recepción.
 3. Otros colegiales, tablón de actividades y comedor.
-4. Guardar/cargar progreso y opciones de velocidad de texto.
+4. Opciones de velocidad de texto y nuevas ranuras de guardado.
 5. Más fotogramas de puertas, coche y acciones de mobiliario.
 6. Comprobar manualmente Firefox, Edge, Safari y dispositivos táctiles reales.
+
+## Recepción revisada
+
+- Partida automática versionada en el navegador: inventario, mote, conversaciones, exploración y pistas. `CONTINUAR` devuelve a recepción incluso después del final. Una nueva partida pide confirmación antes de sustituir el progreso al llegar a recepción.
+- `PISTAS` ofrece tres niveles por objetivo y, después, orienta hacia lo pendiente del 100%. No penaliza al jugador.
+- Acariciar a Prim permite seguir su interés por el felpudo. La carta sigue siendo accesible sin esa ayuda.
+- Pedro reconoce la maleta al presentarse. El final retoma ese detalle; completar el 100% desbloquea una confidencia adicional. `SEGUIR EXPLORANDO` permite completar lo pendiente sin reiniciar.
+- Las poses de recogida tienen una pausa visible; el fondo actualizado se carga junto al resto de recursos y comunica los fallos de carga.
+- `dist/` es la única implementación activa. El `index.html` de la raíz redirige a `dist/index.html`; los antiguos módulos de la raíz se han retirado. Los originales de `assets/` se conservan como material fuente.
+
+El guardado es local a este navegador y origen: no se comparte entre dispositivos. Si el navegador impide guardar, el juego avisa y permite seguir jugando en la pestaña.
+
+## Versión unificada
+
+`feature/mote-jugador` integra los cambios de esa rama y de `feat/mejoras-recepcion-v2`. El juego tiene una sola entrada (`dist/index.html`), un único estado y un guardado versionado.
+
+- Pedro permite cambiar el mote durante la conversación, con tres opciones o texto libre de hasta 18 caracteres. Aplicar o cancelar conserva el menú y el progreso.
+- Los retoques de María, Fortuna y Raúl están integrados en los diálogos originales antes de la animación de texto. Ya no se sustituyen textos con temporizadores.
+- El 100% entrega la llave maestra, visible y examinable en la mochila. La entrega espera a que termine la interacción y no caduca. Además, Pedro cuenta su confidencia al subir. La llave queda reservada para las próximas escenas y no evita los requisitos del ascensor.
+- El botón CONTINUAR se habilita al terminar de cargar los recursos.
+- Se recuperan los guardados de ambas ramas en el mismo navegador y origen. Se conservan mote libre, objetos, conversaciones y pistas. El guardado unificado tiene prioridad; si no existe, se recupera el guardado anterior válido más reciente cuando hay fecha. No se borran los originales al migrar. Las partidas guardadas en GitHub Pages y Sites pertenecen a orígenes distintos y no se transfieren entre ellos.
+
+`npm test` incluye las regresiones del mote, las dos migraciones y el premio pendiente tras una lectura prolongada.
