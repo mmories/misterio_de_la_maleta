@@ -12,8 +12,15 @@ export function approachSpeed(current,target,dt){
 }
 
 export function movementStyle({clock,gait,moving,direction,scale,speed}){
- const stride=Math.sin(gait),contact=Math.abs(stride),intensity=clamp(speed/145,.35,1.35);
- return {bob:moving?contact*(1.25+.45*intensity)*scale:Math.sin(clock*1.9)*.5*scale,lean:moving?(direction===2?1:direction===3?-1:0)*stride*.7*intensity:0,shadowScale:moving?1-contact*.07:1,frame:((Math.floor(gait*1.72)%8)+8)%8};
+ const phase=((gait%(Math.PI*2))+Math.PI*2)%(Math.PI*2),stride=Math.sin(phase),lift=(1-Math.cos(phase*2))*.5,intensity=clamp(speed/145,.3,1.25);
+ return {bob:moving?lift*(.85+.3*intensity)*scale:Math.sin(clock*1.9)*.38*scale,lean:moving?(direction===2?1:direction===3?-1:0)*stride*.38*intensity:0,shadowScale:moving?1-lift*.055:1,frame:Math.floor((phase/(Math.PI*2)*8)+.5)%8};
+}
+
+// Front/back sheets contain inconsistent suitcase swaps. These cycles use only
+// frames where the case remains in the same hand; lateral motion uses all 8.
+export function walkFrameIndex(direction,frame){
+ const front=[0,1,2,1,0,5,0,1],back=[8,11,12,15,12,11,8,15];
+ return direction===0?front[frame%8]:direction===1?back[frame%8]:16+frame%8;
 }
 
 export function idleFrame(clock,count,pace=1){

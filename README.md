@@ -98,7 +98,7 @@ La publicación de esta entrega en Sites se realiza por separado. Su acceso inic
 | prim-idle-v2.png | Hoja animada de ocho fotogramas para respiración y reacción de Prim |
 | pedro-idle-v2.png | Hoja animada de ocho fotogramas para respiración, parpadeo, llaves y cambios de peso |
 
-Las portadas son ficticias, no reproducciones de ejemplares históricos. El gag de «La Fábrica» sigue el guion solicitado; no se presenta como un titular verificado de 1994. No se emplea música ni arte extraído de Monkey Island. La fanfarria del Logroñés es una composición procedural original y no una copia de una grabación o melodía comercial.
+El gag de «La Fábrica» sigue el guion solicitado. No se emplea música ni arte extraído de Monkey Island. La fanfarria del Logroñés es una composición procedural original y no una copia de una grabación o melodía comercial.
 
 ## Siguiente episodio
 
