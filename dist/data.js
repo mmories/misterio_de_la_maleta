@@ -22,7 +22,7 @@ export const HOTSPOTS=[
 {id:'elevator',name:'ascensores',rect:[549,197,85,82],at:[606,287],look:'Tercera planta. El ascensor promete llevarme. La maleta exige que cumpla.'},
 {id:'stairs',name:'escaleras',rect:[665,230,75,120],at:[683,340],look:'Las escaleras suben con una alegría que mi maleta no comparte.'},
 {id:'entry',name:'puerta de entrada',rect:[5,493,181,101],at:[229,551],look:'Por ahí he entrado. Todavía podría decir que me he equivocado de edificio.'},
-{id:'mat',name:'felpudo de entrada',rect:[185,500,245,96],at:[229,551],look:'El felpudo tiene una esquina levantada. O está mal puesto o alguien quería que mirase debajo.'},
+{id:'mat',name:'felpudo de entrada',rect:[185,500,245,96],at:[229,551],look:'Un felpudo enorme con el escudo del Colegio Mayor. Lleva aquí el tiempo suficiente para saber más que Pedro.'},
 {id:'rulesBook',name:'reglamento de convivencia',rect:[348,405,58,35],at:[410,448],look:'El reglamento que me ha lanzado Pedro. La pedagogía de proyectil tiene algo difícil de olvidar.'}
 ];
 export const TALK={

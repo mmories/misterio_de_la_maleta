@@ -5,6 +5,7 @@
 - JavaScript: comprobación sintáctica de los cinco módulos publicados.
 - Pruebas de integración ejecutando las funciones reales del juego con adaptadores de DOM/audio: 138 combinaciones de los seis verbos y veintitrés hotspots; todas completan su respuesta o abren las opciones de diálogo previstas.
 - Navegación: 529 pares de destinos alcanzables dentro de la zona caminable, evitando mobiliario y el espacio de Prim.
+- El ascensor permanece bloqueado hasta conseguir la llave, el paquete de tabaco y la carta de Empi escondida bajo el felpudo.
 - Secuencia: ascensor sin llave y sin tabaco bloqueado; bienvenida; habitación asignada; entrega única de llave; sofá y paquete de tabaco; coger Marca sin duplicarlo; devolverlo; combinación de maleta con Prim; final con ambos requisitos.
 - Carta de Empi: el felpudo es alcanzable, la carta se recoge una sola vez, entra en el inventario y puede releerse.
 - Chrome, mediante interacción real: carga de recursos, pantalla inicial, cinemática hasta recepción, salto de intro, caminar, doble clic, bienvenida, opciones, entrega de llave, portada de Marca, inventario, acariciar a Prim, ascensor bloqueado y desbloqueado, pantalla de final y botones de música/sonido.

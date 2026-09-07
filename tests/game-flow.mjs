@@ -21,6 +21,7 @@ game.selectVerb('COGER');await run(()=>game.interact(h('marca')));await run(()=>
 game.select('USAR','marca');await run(()=>game.interact(h('correo')));assert.equal(game.getState().hasMarca,false);assert.equal(game.getState().tookPapers.length,0);
 game.select('USAR','bag');await run(()=>game.interact(h('prim')));assert.equal(game.getState().hasKey310,true);
 game.selectVerb('USAR');await run(()=>game.interact(h('sofa')));assert.equal(game.getState().hasTobacco,true);assert.ok(game.getState().collectedItems.includes('tobacco'));
+game.selectVerb('USAR');await run(()=>game.interact(h('elevator')));assert.equal(game.getState().calledElevator,false,'Empi letter must be required to use the elevator');
 game.selectVerb('COGER');await run(()=>game.interact(h('mat')));assert.equal(game.getState().hasEmpiLetter,true);assert.ok(game.getState().collectedItems.includes('empiLetter'));
 game.openInventory();assert.equal(game.getInventory().open,true);assert.equal(game.getInventory().count,4,'Independent inventory must list every collected item');elements.get('inventory-modal').close();
 game.selectVerb('USAR');await run(()=>game.interact(h('elevator')));assert.equal(game.getState().calledElevator,true);
@@ -28,4 +29,4 @@ assert.ok(animation.perspectiveScale('lobby',551)>animation.perspectiveScale('lo
 assert.ok([...Array(32)].every((_,i)=>{const f=animation.movementStyle({clock:0,gait:i/4,moving:true,direction:2,scale:1,speed:135}).frame;return f>=0&&f<8;}),'Walk frame must stay inside the 8-frame cycle');
 assert.equal(content.isAnthemLine('Soy un hincha del equipo, el Logroñés'),true);
 assert.ok(game.anthemCount()>0,'Logroñés motif must be triggered by dialogue');
-console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; independent inventory; key and tobacco elevator gates; mission tracking; paper pickup, duplicate pickup and return; Prim combination; ending.');
+console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; independent inventory; key, tobacco and Empi letter elevator gates; mission tracking; paper pickup, duplicate pickup and return; Prim combination; ending.');
