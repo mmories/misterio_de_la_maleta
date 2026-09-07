@@ -1,4 +1,4 @@
-export const MISSION_OBJECTIVE='Conoce la recepción, averigua qué habitación te han asignado y qué necesitas para poder subir. Aprovecha para obtener toda la información que puedas del recepcionista.';
+export const MISSION_OBJECTIVE='Conoce la recepción, averigua tu habitación y consigue lo necesario para instalarte. Si quieres entender qué pasa con la maleta, tendrás que mirar bastante más allá del mostrador.';
 
 export const MISSION={
  signs:['board','comercia','rulesNotice','residentsNotice','directory','shield'],
