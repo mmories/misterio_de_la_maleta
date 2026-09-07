@@ -4,7 +4,7 @@ const SAVE_KEY='misterio-maleta:partida-v1';
 const $=id=>document.getElementById(id);
 const readSave=()=>{try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch{return null;}};
 const writeSave=save=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch{}};
-const currentNickname=()=>readSave()?.state?.nickname||'Julito';
+const currentNickname=()=>window.MaletaNickname?.current?.()||readSave()?.state?.nickname||'Julito';
 
 const replacements=new Map([
   ['Muy bien, [MOTE]. Intentaré recordarlo.',()=>`Muy bien, ${currentNickname()}. Intentaré recordarlo.`],
@@ -19,6 +19,7 @@ const replacements=new Map([
 ]);
 
 let mariaBridge=false;
+let previousNickname='Julito';
 function refineLine(){
   const line=$('line');
   if(!line||!line.textContent)return;
@@ -29,7 +30,19 @@ function refineLine(){
     return;
   }
   const replacement=replacements.get(text);
-  if(replacement)line.textContent=replacement();
+  if(replacement){line.textContent=replacement();return;}
+  const current=currentNickname();
+  if(previousNickname&&current!==previousNickname&&text.includes(previousNickname)){
+    line.textContent=text.split(previousNickname).join(current);
+  }
+}
+
+function syncSpeaker(){
+  const speaker=$('speaker');
+  if(!speaker||!speaker.textContent)return;
+  const current=currentNickname().toUpperCase();
+  const known=[previousNickname,'Julito','Topo','El Riojano'].filter(Boolean).map(v=>v.toUpperCase());
+  if(known.includes(speaker.textContent.toUpperCase()))speaker.textContent=current;
 }
 
 function showMariaQuestion(event){
@@ -67,7 +80,7 @@ function addNicknameChoice(){
   b.addEventListener('click',event=>{
     event.preventDefault();
     event.stopPropagation();
-    $('nickname-settings')?.click();
+    window.MaletaNickname?.open?.();
   });
   choices.insertBefore(b,choices.lastElementChild||null);
 }
@@ -102,12 +115,27 @@ function showSurpriseWhenIdle(attempt){
   modal.showModal();
 }
 
+window.addEventListener('maleta-set-nickname',event=>{
+  previousNickname=event.detail?.previous||previousNickname;
+  syncSpeaker();
+  refineLine();
+});
+window.addEventListener('maleta-nickname-changed',()=>{
+  syncSpeaker();
+  refineLine();
+  const choices=$('choices');
+  if(choices&&!choices.hidden)addNicknameChoice();
+});
+
 function boot(){
-  const line=$('line'),choices=$('choices');
+  previousNickname=readSave()?.state?.nickname||'Julito';
+  const line=$('line'),choices=$('choices'),speaker=$('speaker');
   if(line)new MutationObserver(refineLine).observe(line,{childList:true,subtree:true,characterData:true});
   if(choices)new MutationObserver(addNicknameChoice).observe(choices,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+  if(speaker)new MutationObserver(syncSpeaker).observe(speaker,{childList:true,subtree:true,characterData:true});
   window.addEventListener('maleta-save',checkHundredPercent);
   refineLine();
+  syncSpeaker();
   addNicknameChoice();
   checkHundredPercent();
 }
