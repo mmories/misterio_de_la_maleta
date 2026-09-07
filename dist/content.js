@@ -3,7 +3,7 @@ export const MISSION_OBJECTIVE='Conoce la recepción, averigua qué habitación 
 export const MISSION={
  signs:['board','comercia','rulesNotice','residentsNotice','directory','shield'],
  uses:['plant','pedro','stairs','sofa','phone','phoneBooths','prim','elevator'],
- dialogues:['welcome','key','place','rules','weather','canal','nickname','suitcase','comercia','prim','bye'],
+ dialogues:['welcome','key','place','rules','weather','canal','nickname','suitcase','comercia','prim','colegiala','bye'],
  objects:['bag','key','tobacco','empiLetter','rulesBook','correo','mundo','abc','marca','comerciaNote']
 };
 

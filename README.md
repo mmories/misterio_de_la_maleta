@@ -30,7 +30,7 @@ No abrir `index.html` directamente mediante `file://`: los módulos JavaScript r
 - Recepción basada en el último fondo aportado, con periódicos adaptados.
 - Pedro, diálogo ramificado, llave 310 y pista de la maleta.
 - Prim, pastor alemán residente en recepción: mirar, hablar, acariciar (`USAR Prim`) y mostrar la maleta.
-- Veinticuatro zonas interactivas y seis verbos contextuales. `USAR` abre, cierra o activa cada objeto según corresponda.
+- Veinticinco zonas interactivas y seis verbos contextuales. `USAR` abre, cierra o activa cada objeto según corresponda.
 - Periódicos independientes: El Correo, El Mundo, ABC y Marca.
 - Inventario y combinaciones de objetos con personajes o escenario.
 - Felpudo interactivo con una carta de Empi para la habitación 310, conservada en el inventario como pista para el misterio.

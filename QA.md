@@ -3,8 +3,8 @@
 ## Comprobado
 
 - JavaScript: comprobación sintáctica de los cinco módulos publicados.
-- Pruebas de integración ejecutando las funciones reales del juego con adaptadores de DOM/audio: 144 combinaciones de los seis verbos y veinticuatro hotspots; todas completan su respuesta o abren las opciones de diálogo previstas.
-- Navegación: 576 pares de destinos alcanzables dentro de la zona caminable, evitando mobiliario y el espacio de Prim.
+- Pruebas de integración ejecutando las funciones reales del juego con adaptadores de DOM/audio: 150 combinaciones de los seis verbos y veinticinco hotspots; todas completan su respuesta o abren las opciones de diálogo previstas.
+- Navegación: 625 pares de destinos alcanzables dentro de la zona caminable, evitando mobiliario y el espacio de Prim.
 - El ascensor permanece bloqueado hasta conseguir la llave, el paquete de tabaco, la carta de Empi escondida bajo el felpudo y el reglamento de convivencia que lanza Pedro.
 - Secuencia: ascensor sin llave y sin tabaco bloqueado; bienvenida; habitación asignada; entrega única de llave; sofá y paquete de tabaco; coger Marca sin duplicarlo; devolverlo; combinación de maleta con Prim; final con ambos requisitos.
 - Carta de Empi: el felpudo es alcanzable, la carta se recoge una sola vez, entra en el inventario y puede releerse.

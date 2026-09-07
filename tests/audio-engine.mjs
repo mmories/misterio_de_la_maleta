@@ -16,7 +16,7 @@ globalThis.setInterval=()=>1;
 
 const audio=new AudioEngine();
 await audio.unlock();
-for(const theme of ['title','exterior','lobby']){audio.setTheme(theme);audio.schedule();}
+for(const theme of ['title','exterior','lobby','credits']){audio.setTheme(theme);audio.schedule();}
 for(const effect of ['key','item','bell','engine','door','step','paper','case','elevator'])audio.effect(effect);
 audio.playLogrones();
 assert.ok(audio.anthemUntil>audio.ctx.currentTime,'The Logroñés fanfare must be scheduled');
