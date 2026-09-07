@@ -2,12 +2,14 @@
   const SAVE_KEY = 'misterio-maleta:partida-v1';
   const OLD_NICK_KEY = 'misterio-maleta:mote';
   const DEFAULT_NAME = 'Julito';
+  let resumeBound = false;
 
   const clean = value => String(value || '').trim().replace(/\s+/g, ' ').replace(/[<>]/g, '').slice(0, 18);
-  const readSave = () => {
-    try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return null; }
-  };
-  const writeNickname = value => {
+  const readSave = () => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return null; } };
+  const currentNickname = () => clean(readSave()?.state?.nickname || localStorage.getItem(OLD_NICK_KEY)) || DEFAULT_NAME;
+  const clearProgress = () => { try { localStorage.removeItem(SAVE_KEY); } catch {} };
+
+  function writeNickname(value) {
     const nickname = clean(value) || DEFAULT_NAME;
     let save = readSave();
     if (!save || !save.state) save = {version:1,savedAt:Date.now(),state:{introCompleted:false,nickname}};
@@ -17,13 +19,12 @@
     localStorage.setItem(SAVE_KEY, JSON.stringify(save));
     localStorage.setItem(OLD_NICK_KEY, nickname);
     return nickname;
-  };
-  const currentNickname = () => clean(readSave()?.state?.nickname || localStorage.getItem(OLD_NICK_KEY)) || DEFAULT_NAME;
+  }
 
   function button(label, id, title) {
     const b = document.createElement('button');
-    b.id = id;
     b.type = 'button';
+    if (id) b.id = id;
     b.textContent = label;
     if (title) b.title = title;
     return b;
@@ -44,20 +45,17 @@
           <input id="nickname-input" maxlength="18" autocomplete="off" value="${currentNickname()}" aria-label="Nuevo mote">
           <button id="nickname-accept" type="button">GUARDAR</button>
         </div>
-        <p class="nickname-note">El cambio se conserva en este navegador. Al guardarlo se recarga la partida en el mismo punto para que todos los diálogos usen el nuevo mote.</p>
+        <p class="nickname-note">Se conserva en este navegador. Al guardarlo, la partida se recarga en el mismo punto para que todos los diálogos usen el nuevo mote.</p>
         <button id="nickname-cancel" type="button">CANCELAR</button>
       </form>`;
-    const presets = ['Julito', 'Topo', 'El Riojano'];
     const holder = dialog.querySelector('.nickname-presets');
     const apply = value => {
       const nickname = writeNickname(value);
-      dialog.close();
-      dialog.remove();
       sessionStorage.setItem('misterio-maleta:resume-after-nick', '1');
       sessionStorage.setItem('misterio-maleta:nick-toast', nickname);
       location.reload();
     };
-    presets.forEach(name => {
+    ['Julito','Topo','El Riojano'].forEach(name => {
       const b = button(name.toUpperCase(), '', 'Usar este mote');
       b.addEventListener('click', () => apply(name));
       holder.append(b);
@@ -75,60 +73,82 @@
     setTimeout(() => input.select(), 0);
   }
 
+  function bindResume(start) {
+    if (resumeBound) return;
+    resumeBound = true;
+    document.addEventListener('click', event => {
+      const target = event.target.closest?.('#start');
+      if (!target || target.dataset.resume !== 'true') return;
+      setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true})), 90);
+    }, true);
+  }
+
+  function decorateStart() {
+    const start = document.getElementById('start');
+    const newGame = document.getElementById('new-game');
+    const save = readSave();
+    const canContinue = Boolean(save?.state?.introCompleted);
+    if (!start) return;
+    if (canContinue) {
+      start.textContent = 'CONTINUAR';
+      start.dataset.resume = 'true';
+      if (newGame) newGame.hidden = false;
+    } else {
+      delete start.dataset.resume;
+      if (!start.disabled && start.textContent === 'CONTINUAR') start.textContent = 'COMENZAR';
+      if (newGame) newGame.hidden = true;
+    }
+    bindResume(start);
+
+    if (sessionStorage.getItem('misterio-maleta:resume-after-nick') && canContinue && !start.disabled) {
+      sessionStorage.removeItem('misterio-maleta:resume-after-nick');
+      setTimeout(() => start.click(), 40);
+    }
+  }
+
   function enhanceUI() {
     const settings = document.querySelector('.settings');
     if (settings && !document.getElementById('nickname-settings')) {
       const nick = button('MOTE', 'nickname-settings', 'Cambiar mote del protagonista');
       nick.addEventListener('click', openNicknameDialog);
       settings.insertBefore(nick, document.getElementById('help'));
+
+      const saved = document.createElement('span');
+      saved.id = 'save-status';
+      saved.textContent = readSave()?.state?.introCompleted ? 'GUARDADO' : '';
+      saved.title = 'El avance se guarda automáticamente en este navegador';
+      settings.insertBefore(saved, nick);
     }
 
     const titleButtons = document.querySelector('.title-buttons');
-    const start = document.getElementById('start');
-    const save = readSave();
-    const canContinue = Boolean(save?.state?.introCompleted);
-    if (start && canContinue) {
-      start.textContent = 'CONTINUAR';
-      start.dataset.resume = 'true';
-    }
     if (titleButtons && !document.getElementById('new-game')) {
       const fresh = button('NUEVA PARTIDA', 'new-game');
-      fresh.hidden = !canContinue;
       fresh.addEventListener('click', event => {
         event.preventDefault();
         event.stopPropagation();
         if (!confirm('¿Empezar desde cero? Se borrará el avance guardado de este episodio.')) return;
-        localStorage.removeItem(SAVE_KEY);
-        localStorage.removeItem(OLD_NICK_KEY);
-        globalThis.__maletaForceNewGame = true;
+        clearProgress();
         location.reload();
       });
       titleButtons.insertBefore(fresh, document.getElementById('credits'));
     }
-
-    // Continue skips the cinematic but reuses the game's own Enter/Escape path,
-    // preserving all restored state and avoiding duplicated scene logic.
-    document.addEventListener('click', event => {
-      const target = event.target.closest?.('#start');
-      if (!target || target.dataset.resume !== 'true') return;
-      setTimeout(() => document.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true})), 80);
-    }, true);
-
-    const resumeAfterNick = sessionStorage.getItem('misterio-maleta:resume-after-nick');
-    if (resumeAfterNick && canContinue && start) {
-      sessionStorage.removeItem('misterio-maleta:resume-after-nick');
-      setTimeout(() => start.click(), 180);
-    }
+    decorateStart();
   }
 
-  const observer = new MutationObserver(() => {
-    const start = document.getElementById('start');
-    if (start && !start.disabled) {
-      const save = readSave();
-      if (save?.state?.introCompleted) { start.textContent = 'CONTINUAR'; start.dataset.resume = 'true'; }
-    }
+  document.addEventListener('click', event => {
+    if (!event.target.closest?.('#again')) return;
+    clearProgress();
+  }, true);
+
+  window.addEventListener('maleta-save', () => {
+    const status = document.getElementById('save-status');
+    if (!status) return;
+    status.textContent = 'GUARDADO ✓';
+    status.classList.add('saved-flash');
+    setTimeout(() => { status.textContent = 'GUARDADO'; status.classList.remove('saved-flash'); }, 1100);
   });
 
+  const observer = new MutationObserver(decorateStart);
   const boot = () => {
     enhanceUI();
     const start = document.getElementById('start');
