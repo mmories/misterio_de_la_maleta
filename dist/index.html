@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101719"><meta name="description" content="El misterio de la maleta marrón. Una aventura gráfica de Julito en Bilbao, octubre de 1994."><title>El misterio de la maleta marrón</title><link rel="stylesheet" href="style.css"></head>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101719"><meta name="description" content="El misterio de la maleta marrón. Una aventura gráfica de Julito en Bilbao, octubre de 1994."><title>El misterio de la maleta marrón</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="enhancements.css"></head>
 <body>
 <main id="shell">
 <header class="topbar"><span class="edition">CMD <span>AVENTURAS</span></span><span id="location">BILBAO · OCTUBRE DE 1994</span><div class="settings"><button id="scenes" title="Seleccionar escena">ESCENAS</button><button id="music" aria-pressed="true" title="Activar o desactivar música">MÚSICA SÍ</button><button id="sound" aria-pressed="true" title="Activar o desactivar efectos">SONIDO SÍ</button><button id="help" title="Cómo jugar">?</button></div></header>
@@ -8,20 +8,20 @@
 <canvas id="canvas" width="960" height="600" aria-label="Escenario del juego"></canvas>
 <div id="hotspots" aria-label="Objetos del escenario"></div>
 <div id="title" class="overlay">
-<div class="chapter">UNA AVENTURA DE JULITO</div><h1><span>EL MISTERIO DE LA</span>MALETA<br><em>MARRÓN</em></h1><p class="subtitle">EN EL COLEGIO MAYOR DEUSTO</p><div class="title-rule"></div><p class="date">Bilbao, octubre de 1994</p><div class="title-buttons"><button id="start" disabled>CARGANDO…</button><button id="credits">CRÉDITOS</button></div><p class="episode">EPISODIO 0 · LA LLEGADA</p>
+<div class="chapter">UNA AVENTURA DE JULITO</div><h1><span>EL MISTERIO DE LA</span>MALETA<br><em>MARRÓN</em></h1><p class="subtitle">EN EL COLEGIO MAYOR DEUSTO</p><div class="title-rule"></div><p class="date">Bilbao, octubre de 1994</p><div class="title-buttons"><button id="start" disabled>CARGANDO…</button><button id="continue-game" hidden disabled>CONTINUAR</button><button id="credits">CRÉDITOS</button></div><p class="episode">EPISODIO 0 · LA LLEGADA</p>
 </div>
 <div id="speech" hidden aria-live="polite"><span id="speaker"></span><p id="line"></p><button id="next" aria-label="Continuar diálogo">CONTINUAR ▸</button></div>
 <div id="choices" hidden aria-label="Respuestas de Julito"></div>
 <div id="card" hidden></div>
 <div id="transition" hidden><span id="transition-text"></span></div>
-<aside id="objective" hidden aria-live="polite"><small>MISIÓN 0 · LA LLEGADA</small><strong>LA LLEGADA</strong><span>Conoce la recepción, averigua qué habitación te han asignado y qué necesitas para poder subir. Aprovecha para obtener toda la información que puedas del recepcionista.</span></aside>
+<aside id="objective" hidden aria-live="polite"><small>MISIÓN 0 · LA LLEGADA</small><strong>LA LLEGADA</strong><span>Conoce la recepción, averigua tu habitación y consigue lo necesario para instalarte. Si quieres entender qué pasa con la maleta, tendrás que mirar bastante más allá del mostrador.</span></aside>
 <button id="mission-meter" hidden title="Ver progreso de la misión"><span>MISIÓN 0</span><strong id="mission-percent">0%</strong><i><b id="mission-fill"></b></i></button>
 <button id="skip" hidden>SALTAR INTRO · ESC</button>
 <div id="toast" role="status" hidden></div>
 </div>
 <div id="controls"><div id="sentence" aria-live="polite">Una maleta. Una llave. Un buen comienzo.</div><div class="console"><div id="verbs" aria-label="Verbos"></div><div class="inventory"><div class="inventory-label">INVENTARIO <span id="count">01</span></div><button id="open-inventory" type="button" aria-haspopup="dialog"><span id="inventory-summary">Nada seleccionado</span><strong>ABRIR MOCHILA <kbd>I</kbd></strong></button><div id="items" hidden aria-hidden="true"></div></div></div></div>
 </section>
-<footer><span id="hint">Una aventura para jugar sin prisa.</span><button id="show-hotspots">ESPACIO · OBJETOS</button></footer>
+<footer><span id="hint">Una aventura para jugar sin prisa.</span><button id="ask-hint" hidden>PISTAS</button><button id="show-hotspots">ESPACIO · OBJETOS</button></footer>
 </main>
 <dialog id="modal"><div id="modal-body"></div><button id="close-modal">VOLVER</button></dialog>
 <dialog id="inventory-modal" aria-labelledby="inventory-title"><div class="inventory-screen"><header><div><small>PERTENENCIAS DE JULITO</small><h2 id="inventory-title">Inventario</h2></div><span><b id="inventory-total">01</b> OBJETOS</span></header><p id="inventory-instruction">Elige un objeto para examinarlo.</p><div id="inventory-grid" role="list"></div><footer><span>Selecciona un objeto y después su destino cuando uses USAR o DAR.</span><button id="close-inventory" type="button">VOLVER AL JUEGO</button></footer></div></dialog>

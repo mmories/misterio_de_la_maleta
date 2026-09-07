@@ -1,12 +1,14 @@
+import {cleanNickname} from '../dist/nickname.js';
+import * as saves from '../dist/save.js';import * as hints from '../dist/hints.js';
 // Integration checks execute the real game functions with a minimal DOM/audio adapter.
 // Visual composition and real browser input are checked separately in Chrome.
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import * as data from '../dist/data.js';import * as animation from '../dist/animation.js';import * as content from '../dist/content.js';
 const elements=new Map();
 class Element{constructor(){this.hidden=true;this.children=[];this.style={};this.dataset={};this.classList={toggle(){}};this.textContent='';}append(...a){this.children.push(...a);}replaceChildren(...a){this.children=a;}setAttribute(){}getContext(){return new Proxy({},{get:()=>()=>{}});}querySelector(){return this.child??=new Element();}showModal(){this.open=true;}close(){this.open=false;}}
 class AudioStub{setTheme(){}effect(){}playLogrones(){this.anthem=(this.anthem||0)+1;}async unlock(){}}
-let timer=0;const timers=new Map();const context={...data,...animation,...content,AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
+let nicknameAnswer=null;let timer=0;const timers=new Map();const memory=new Map(),storage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value)};const context={cleanNickname,openNicknameEditor:async()=>nicknameAnswer,...data,...animation,...content,...hints,readSave:()=>saves.readSave(storage),writeSave:state=>saves.writeSave(state,storage),AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
-vm.runInContext(src+`\nthis.testGame={interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
+vm.runInContext(src+`\nthis.testGame={maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
 async function run(action){let finished=false,error;Promise.resolve().then(action).then(()=>finished=true,e=>{error=e;finished=true;});for(let i=0;i<1500&&!finished;i++){game.tick(t+=100);game.next();game.closeCard();const nickname=game.getChoices().find(b=>b.textContent==='TOPO');if(nickname)nickname.onclick();const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();await Promise.resolve();await Promise.resolve();}if(error)throw error;assert.ok(finished,'Action must complete');}
 const h=id=>data.HOTSPOTS.find(x=>x.id===id);
@@ -36,3 +38,61 @@ assert.ok(!src.includes(']],true,e)'), 'Intro dialogue must wait for CONTINUAR i
 assert.equal(content.isAnthemLine('Soy un hincha del equipo, el Logroñés'),true);
 assert.ok(game.anthemCount()>0,'Logroñés motif must be triggered by dialogue');
 console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; independent inventory; key, tobacco, Empi letter and rules book elevator gates; mission tracking; paper pickup, duplicate pickup and return; Prim combination; ending.');
+// Resume the actual game after a completed episode, then finish optional exploration.
+const completed=structuredClone(game.getState());
+assert.equal(completed.secondSceneCode,true);
+game.reset();await run(()=>game.continueGame());
+assert.equal(game.getState().hasEmpiLetter,true);
+assert.equal(game.getState().hasRulesBook,true);
+assert.equal(game.getState().nickname,completed.nickname);
+assert.equal(game.getState().calledElevator,false,'Continue must reopen reception, not a half-finished elevator');
+assert.deepEqual([...game.getState().readTopics],completed.readTopics);
+game.selectVerb('USAR');await run(()=>game.interact(h('prim')));
+assert.equal(game.getState().primTrusted,true);
+// The full exploration reward remains reachable from the resumed state.
+for(const [group,field] of [['signs','inspectedSigns'],['uses','usedTargets'],['dialogues','readTopics'],['objects','collectedItems']])game.getState()[field]=[...content.MISSION[group]];
+assert.equal(game.missionStats().percent,100);
+game.selectVerb('USAR');await run(()=>game.interact(h('elevator')));
+assert.equal(game.getState().bonusSeen,true,'100% must unlock Pedro’s confidence');
+assert.equal(saves.readSave(storage).bonusSeen,true,'Reward must persist');
+game.begin();game.selectVerb('USAR');await run(()=>game.interact(h('prim')));
+assert.equal(game.getState().primClueSeen,true,'Befriending Prim must reveal the mat lead');
+assert.equal(game.getState().hasEmpiLetter,false,'A clue must not collect the letter automatically');
+game.selectVerb('COGER');await run(()=>game.interact(h('mat')));
+assert.equal(saves.readSave(storage).hasEmpiLetter,true,'Collection must autosave');
+console.log('PASS: actual resume, preserved conversations and inventory, Prim clue, 100% reward and autosave.');
+// Editable nickname stays in Pedro's conversation and updates the real state.
+game.begin();game.selectVerb('HABLAR CON');await run(()=>game.interact(h('pedro')));
+await run(()=>game.getChoices().find(b=>b.textContent.includes('Vengo a por')).onclick());
+nicknameAnswer='  El   Potele  ';
+await run(()=>game.getChoices().find(b=>b.textContent.includes('cambiar mi mote')).onclick());
+assert.equal(game.getState().nickname,'El Potele');
+assert.equal(game.getState().hasKey310,true);
+assert.equal(game.getDisplayName(),'El Potele');
+assert.ok(game.getChoices().some(b=>b.textContent.includes('Eso es todo')));
+nicknameAnswer=null;await run(()=>game.getChoices().find(b=>b.textContent.includes('cambiar mi mote')).onclick());
+assert.equal(game.getState().nickname,'El Potele','Cancel must preserve the current nickname');
+await run(()=>game.getChoices().find(b=>b.textContent.includes('Eso es todo')).onclick());
+assert.equal(game.isBusy(),false,'Changing or cancelling a nickname must not lock the conversation');
+assert.equal(saves.readSave(storage).nickname,'El Potele');
+await run(()=>game.say('Pedro','Muy bien, [MOTE]. Intentaré recordarlo.'));
+assert.equal(game.getLine(),'Muy bien, El Potele. Intentaré recordarlo.','Name replacement must happen before typing');
+// Regression: completing 100% during a long conversation must never lose the reward.
+for(const [group,field] of [['signs','inspectedSigns'],['uses','usedTargets'],['dialogues','readTopics'],['objects','collectedItems']])game.getState()[field]=[...content.MISSION[group]];
+game.setBusy(true);const longSpeech=game.say('Pedro','Tómate tu tiempo. Esta conversación no tiene límite.');
+await game.maybeReward();game.tick(t+=30000);
+assert.equal(game.getState().rewardShown,false);
+assert.equal(game.getState().hasMasterKey,false,'Do not silently grant a reward while its dialogue is blocked');
+await run(()=>longSpeech);game.setBusy(false);
+elements.get('inventory-modal').showModal();await game.maybeReward();
+assert.equal(game.getState().rewardShown,false,'An open inventory must defer the reward');
+elements.get('inventory-modal').close();await run(()=>game.maybeReward());
+assert.equal(game.getState().rewardShown,true);assert.equal(game.getState().hasMasterKey,true);
+assert.equal(game.inventoryItems().filter(id=>id==='masterKey').length,1,'The master key must appear exactly once in the actual inventory');
+const lastRewardLine=game.getLine();await game.maybeReward();assert.equal(game.getLine(),lastRewardLine);
+game.reset();await run(()=>game.continueGame());assert.equal(game.getState().hasMasterKey,true);assert.equal(game.getState().rewardShown,true);
+assert.equal(game.inventoryItems().filter(id=>id==='masterKey').length,1);
+// Visibility is derived from save state when loading finishes, regardless of elapsed time.
+game.reset();elements.get('start').disabled=false;game.refreshContinue();
+assert.equal(elements.get('continue-game').hidden,false);assert.equal(elements.get('continue-game').disabled,false);
+console.log('PASS: custom/cancelled nickname, typing substitution, deferred 100% reward, visible master key, resume and load-independent Continue.');

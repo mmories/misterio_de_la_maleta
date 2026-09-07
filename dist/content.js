@@ -1,4 +1,4 @@
-export const MISSION_OBJECTIVE='Conoce la recepción, averigua qué habitación te han asignado y qué necesitas para poder subir. Aprovecha para obtener toda la información que puedas del recepcionista.';
+export const MISSION_OBJECTIVE='Conoce la recepción, averigua tu habitación y consigue lo necesario para instalarte. Si quieres entender qué pasa con la maleta, tendrás que mirar bastante más allá del mostrador.';
 
 export const MISSION={
  signs:['board','comercia','rulesNotice','residentsNotice','directory','shield'],
@@ -15,3 +15,12 @@ export const PAPER_INFO={
 };
 
 export const isAnthemLine=text=>/(soy un hincha|himno del Logroñés|riojano de cepa|las riojanas)/i.test(text);
+
+export const MASTER_KEY_DIALOGUE=[
+ ['Pedro','[MOTE], he visto gente tardar cuatro años en enterarse de menos cosas que tú en una tarde.'],
+ ['Julito','¿Eso es un cumplido?'],['Pedro','No te acostumbres.'],
+ ['Pedro','Toma. Es la llave maestra del Colegio Mayor.'],
+ ['Julito','¿La que abre todas las habitaciones?'],['Pedro','Todas. Y precisamente por eso no se la doy a cualquiera.'],
+ ['Julito','¿Y a mí sí?'],
+ ['Pedro','Has conseguido enterarte de todo lo que pasa en esta recepción. Ahora intenta no enterarte de demasiado.']
+];
