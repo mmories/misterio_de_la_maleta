@@ -5,13 +5,21 @@
 
   const clean = value => String(value || '').trim().replace(/\s+/g, ' ').replace(/[<>]/g, '').slice(0, 18);
   const readSave = () => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return null; } };
-  const currentNickname = () => clean(readSave()?.state?.nickname || localStorage.getItem(OLD_NICK_KEY)) || DEFAULT_NAME;
+  const currentNickname = () => clean(localStorage.getItem(OLD_NICK_KEY) || readSave()?.state?.nickname) || DEFAULT_NAME;
   const clearProgress = () => { try { localStorage.removeItem(SAVE_KEY); } catch {} };
 
   function writeNickname(value) {
     const nickname = clean(value) || DEFAULT_NAME;
-    localStorage.setItem(OLD_NICK_KEY, nickname);
-    window.dispatchEvent(new CustomEvent('maleta-set-nickname', {detail:{nickname}}));
+    const previous = currentNickname();
+    let save = readSave();
+    if (save?.state) {
+      save.state.nickname = nickname;
+      save.savedAt = Date.now();
+      try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch {}
+    }
+    try { localStorage.setItem(OLD_NICK_KEY, nickname); } catch {}
+    window.dispatchEvent(new CustomEvent('maleta-set-nickname', {detail:{nickname, previous}}));
+    window.dispatchEvent(new CustomEvent('maleta-save', {detail:{savedAt:Date.now()}}));
     return nickname;
   }
 
@@ -79,8 +87,7 @@
   }
 
   function decorateStableUI() {
-    const oldNicknameButton = document.getElementById('nickname-settings');
-    if (oldNicknameButton) oldNicknameButton.remove();
+    document.getElementById('nickname-settings')?.remove();
 
     const titleButtons = document.querySelector('.title-buttons');
     if (titleButtons && !document.getElementById('new-game')) {
