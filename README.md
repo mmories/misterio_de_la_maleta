@@ -103,8 +103,19 @@ El gag de «La Fábrica» sigue el guion solicitado. No se emplea música ni art
 ## Siguiente episodio
 
 1. Tercera planta, pasillo y habitación 310.
-2. Primer puzle real vinculado con la maleta y el olfato de Prim.
+2. Ampliar el puzle de la maleta a partir de la pista de Prim en recepción.
 3. Otros colegiales, tablón de actividades y comedor.
-4. Guardar/cargar progreso y opciones de velocidad de texto.
+4. Opciones de velocidad de texto y nuevas ranuras de guardado.
 5. Más fotogramas de puertas, coche y acciones de mobiliario.
 6. Comprobar manualmente Firefox, Edge, Safari y dispositivos táctiles reales.
+
+## Recepción revisada
+
+- Partida automática versionada en el navegador: inventario, mote, conversaciones, exploración y pistas. `CONTINUAR` devuelve a recepción incluso después del final. Una nueva partida pide confirmación antes de sustituir el progreso al llegar a recepción.
+- `PISTAS` ofrece tres niveles por objetivo y, después, orienta hacia lo pendiente del 100%. No penaliza al jugador.
+- Acariciar a Prim permite seguir su interés por el felpudo. La carta sigue siendo accesible sin esa ayuda.
+- Pedro reconoce la maleta al presentarse. El final retoma ese detalle; completar el 100% desbloquea una confidencia adicional. `SEGUIR EXPLORANDO` permite completar lo pendiente sin reiniciar.
+- Las poses de recogida tienen una pausa visible; el fondo actualizado se carga junto al resto de recursos y comunica los fallos de carga.
+- `dist/` es la única implementación activa. El `index.html` de la raíz redirige a `dist/index.html`; los antiguos módulos de la raíz se han retirado. Los originales de `assets/` se conservan como material fuente.
+
+El guardado es local a este navegador y origen: no se comparte entre dispositivos. Si el navegador impide guardar, el juego avisa y permite seguir jugando en la pestaña.

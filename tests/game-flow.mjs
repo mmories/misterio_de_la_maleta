@@ -1,12 +1,13 @@
+import * as saves from '../dist/save.js';import * as hints from '../dist/hints.js';
 // Integration checks execute the real game functions with a minimal DOM/audio adapter.
 // Visual composition and real browser input are checked separately in Chrome.
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import * as data from '../dist/data.js';import * as animation from '../dist/animation.js';import * as content from '../dist/content.js';
 const elements=new Map();
 class Element{constructor(){this.hidden=true;this.children=[];this.style={};this.dataset={};this.classList={toggle(){}};this.textContent='';}append(...a){this.children.push(...a);}replaceChildren(...a){this.children=a;}setAttribute(){}getContext(){return new Proxy({},{get:()=>()=>{}});}querySelector(){return this.child??=new Element();}showModal(){this.open=true;}close(){this.open=false;}}
 class AudioStub{setTheme(){}effect(){}playLogrones(){this.anthem=(this.anthem||0)+1;}async unlock(){}}
-let timer=0;const timers=new Map();const context={...data,...animation,...content,AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
+let timer=0;const timers=new Map();const memory=new Map(),storage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value)};const context={...data,...animation,...content,...hints,readSave:()=>saves.readSave(storage),writeSave:state=>saves.writeSave(state,storage),AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
-vm.runInContext(src+`\nthis.testGame={interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
+vm.runInContext(src+`\nthis.testGame={continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
 async function run(action){let finished=false,error;Promise.resolve().then(action).then(()=>finished=true,e=>{error=e;finished=true;});for(let i=0;i<1500&&!finished;i++){game.tick(t+=100);game.next();game.closeCard();const nickname=game.getChoices().find(b=>b.textContent==='TOPO');if(nickname)nickname.onclick();const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();await Promise.resolve();await Promise.resolve();}if(error)throw error;assert.ok(finished,'Action must complete');}
 const h=id=>data.HOTSPOTS.find(x=>x.id===id);
@@ -36,3 +37,26 @@ assert.ok(!src.includes(']],true,e)'), 'Intro dialogue must wait for CONTINUAR i
 assert.equal(content.isAnthemLine('Soy un hincha del equipo, el Logroñés'),true);
 assert.ok(game.anthemCount()>0,'Logroñés motif must be triggered by dialogue');
 console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; independent inventory; key, tobacco, Empi letter and rules book elevator gates; mission tracking; paper pickup, duplicate pickup and return; Prim combination; ending.');
+// Resume the actual game after a completed episode, then finish optional exploration.
+const completed=structuredClone(game.getState());
+assert.equal(completed.secondSceneCode,true);
+game.reset();await run(()=>game.continueGame());
+assert.equal(game.getState().hasEmpiLetter,true);
+assert.equal(game.getState().hasRulesBook,true);
+assert.equal(game.getState().nickname,completed.nickname);
+assert.equal(game.getState().calledElevator,false,'Continue must reopen reception, not a half-finished elevator');
+assert.deepEqual([...game.getState().readTopics],completed.readTopics);
+game.selectVerb('USAR');await run(()=>game.interact(h('prim')));
+assert.equal(game.getState().primTrusted,true);
+// The full exploration reward remains reachable from the resumed state.
+for(const [group,field] of [['signs','inspectedSigns'],['uses','usedTargets'],['dialogues','readTopics'],['objects','collectedItems']])game.getState()[field]=[...content.MISSION[group]];
+assert.equal(game.missionStats().percent,100);
+game.selectVerb('USAR');await run(()=>game.interact(h('elevator')));
+assert.equal(game.getState().bonusSeen,true,'100% must unlock Pedro’s confidence');
+assert.equal(saves.readSave(storage).bonusSeen,true,'Reward must persist');
+game.begin();game.selectVerb('USAR');await run(()=>game.interact(h('prim')));
+assert.equal(game.getState().primClueSeen,true,'Befriending Prim must reveal the mat lead');
+assert.equal(game.getState().hasEmpiLetter,false,'A clue must not collect the letter automatically');
+game.selectVerb('COGER');await run(()=>game.interact(h('mat')));
+assert.equal(saves.readSave(storage).hasEmpiLetter,true,'Collection must autosave');
+console.log('PASS: actual resume, preserved conversations and inventory, Prim clue, 100% reward and autosave.');

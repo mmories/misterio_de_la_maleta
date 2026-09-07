@@ -1,1 +1,15 @@
-{"name":"maleta-marron","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite","check":"node --check dist/game.js && node --check dist/audio.js && node --check dist/animation.js && node --check dist/content.js && node --check dist/data.js","test":"node tests/game-flow.mjs && node tests/audio-engine.mjs","start":"vite --host 0.0.0.0"},"devDependencies":{"vite":"7.1.7"}}
+{
+  "name": "maleta-marron",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "check": "node --check dist/game.js && node --check dist/audio.js && node --check dist/animation.js && node --check dist/content.js && node --check dist/data.js && node --check dist/save.js && node --check dist/hints.js",
+    "test": "node tests/game-flow.mjs && node tests/audio-engine.mjs && node tests/save-hints.mjs",
+    "start": "vite --host 0.0.0.0"
+  },
+  "devDependencies": {
+    "vite": "7.1.7"
+  }
+}

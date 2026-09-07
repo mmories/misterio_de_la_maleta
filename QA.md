@@ -24,3 +24,16 @@ npm run check
 node tests/game-flow.mjs
 node tests/audio-engine.mjs
 ```
+
+## Validación de la revisión de recepción
+
+Ejecutadas en esta revisión las pruebas de `game-flow.mjs`, `save-hints.mjs` y `audio-engine.mjs`, además de comprobación sintáctica:
+
+- 150 combinaciones de verbos y objetos y 625 pares de navegación.
+- Recuperación real del estado del juego después del final, conservando objetos, mote y conversaciones.
+- Pista de Prim sin recoger automáticamente la carta; recogida y guardado posterior.
+- Recompensa del 100% y persistencia de su desbloqueo.
+- Guardados corruptos, versión desconocida, campos de tipo incorrecto, almacenamiento bloqueado y cuota agotada.
+- Tres niveles de pistas, cambio de objetivo y persistencia de las ayudas pedidas.
+
+La revisión actual no se ha validado visualmente en un navegador: la descarga del navegador de pruebas no estuvo disponible. Las comprobaciones anteriores de Chrome descritas arriba corresponden a la versión anterior. Queda pendiente verificar el encuadre de los nuevos botones y las pausas de animación en escritorio y móvil.
