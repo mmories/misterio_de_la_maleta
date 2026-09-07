@@ -3,6 +3,7 @@
   const OLD_NICK_KEY = 'misterio-maleta:mote';
   const DEFAULT_NAME = 'Julito';
   let resumeBound = false;
+  let dialogueBound = false;
 
   const clean = value => String(value || '').trim().replace(/\s+/g, ' ').replace(/[<>]/g, '').slice(0, 18);
   const readSave = () => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return null; } };
@@ -106,6 +107,53 @@
     }
   }
 
+  function refineDialogueText() {
+    const line = document.getElementById('line');
+    if (!line || !line.textContent) return;
+    const exact = line.textContent;
+    const replacements = new Map([
+      ['Muy bien, [MOTE]. Intentaré recordarlo.', `Muy bien, ${currentNickname()}. Intentaré recordarlo.`],
+      ['Yo soy María. Dime una cosa importante: ¿bailas salsa?', 'Yo soy María. Esta noche estamos intentando montar una clase de salsa. Dime una cosa importante: ¿bailas salsa?'],
+      ['Definitivamente, en el CMD el nivel de las chicas supera al de mis pasos de baile.', 'Con la salsa voy a necesitar más de una clase. Con las excusas, en cambio, creo que puedo convalidar créditos.'],
+      ['La cantera del Madrid. Hablan de un chaval de 17 años que promete mucho.', 'Raúl González, 17 años. Apuntaré el nombre por si acaso.'],
+      ['Un paquete blando de tabaco, bastante arrugado.', 'Un paquete blando de Fortuna, bastante arrugado. Por una vez, el nombre de la marca parece una descripción del hallazgo.'],
+      ['Todavía quedan algunos cigarrillos. El anterior dueño cuidaba mejor el sofá que el paquete.', 'Todavía quedan algunos cigarrillos. Menos mal: mi madre me quitó el tabaco de la maleta antes de salir. Según ella era por mi bien. Según yo, era un intento de asesinato a medio plazo.'],
+      ['Un paquete de tabaco. Por fin alguien ha dejado una bienvenida con futuro.', 'Un paquete de Fortuna. Literalmente. Mi madre me quitó el mío de la maleta antes de salir y yo empezaba a calcular cuánto podía sobrevivir sin fumar.'],
+      ['No puedo subir así.', 'No puedo subir así. Me falta algo esencial para la supervivencia universitaria.'],
+      ['Necesito encontrar tabaco antes de enfrentarme a una tercera planta.', 'Necesito encontrar tabaco antes de enfrentarme a una tercera planta. Mi madre retiró el mío de la maleta en un acto que ella llama educación y yo llamo sabotaje.'],
+      ['Un hombre no vive solo de llave, maleta y puré naranja.', 'Un hombre no vive solo de llave, maleta y puré naranja. Y yo, desde luego, no pienso averiguar cuánto dura sin tabaco.']
+    ]);
+    if (replacements.has(exact)) line.textContent = replacements.get(exact);
+  }
+
+  function addDiegeticNicknameChoice() {
+    const choices = document.getElementById('choices');
+    if (!choices || choices.hidden || document.getElementById('change-nickname-dialogue')) return;
+    const labels = [...choices.querySelectorAll('button')].map(b => b.textContent);
+    if (!labels.some(t => /Eso es todo|Vengo a por la llave|¿Dónde estoy exactamente|¿Y este perro/.test(t))) return;
+    const b = button('Por cierto, ¿cómo has dicho que querías que te llamásemos?', 'change-nickname-dialogue');
+    b.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      choices.hidden = true;
+      openNicknameDialog();
+    });
+    choices.insertBefore(b, choices.lastElementChild || null);
+  }
+
+  function bindDialogueRefinements() {
+    if (dialogueBound) return;
+    dialogueBound = true;
+    const line = document.getElementById('line');
+    const choices = document.getElementById('choices');
+    const observer = new MutationObserver(() => {
+      refineDialogueText();
+      addDiegeticNicknameChoice();
+    });
+    if (line) observer.observe(line, {childList:true, subtree:true, characterData:true});
+    if (choices) observer.observe(choices, {childList:true, subtree:true, attributes:true, attributeFilter:['hidden']});
+  }
+
   function enhanceUI() {
     const settings = document.querySelector('.settings');
     if (settings && !document.getElementById('nickname-settings')) {
@@ -133,6 +181,7 @@
       titleButtons.insertBefore(fresh, document.getElementById('credits'));
     }
     decorateStart();
+    bindDialogueRefinements();
   }
 
   document.addEventListener('click', event => {
