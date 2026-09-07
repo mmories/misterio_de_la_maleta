@@ -5,8 +5,8 @@
 
   const clean = value => String(value || '').trim().replace(/\s+/g, ' ').replace(/[<>]/g, '').slice(0, 18);
   const readSave = () => { try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch { return null; } };
-  const currentNickname = () => clean(localStorage.getItem(OLD_NICK_KEY) || readSave()?.state?.nickname) || DEFAULT_NAME;
-  const clearProgress = () => { try { localStorage.removeItem(SAVE_KEY); } catch {} };
+  const currentNickname = () => clean(readSave()?.state?.nickname || localStorage.getItem(OLD_NICK_KEY)) || DEFAULT_NAME;
+  const clearProgress = () => { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(OLD_NICK_KEY); } catch {} };
 
   function writeNickname(value) {
     const nickname = clean(value) || DEFAULT_NAME;
@@ -19,7 +19,6 @@
     }
     try { localStorage.setItem(OLD_NICK_KEY, nickname); } catch {}
     window.dispatchEvent(new CustomEvent('maleta-set-nickname', {detail:{nickname, previous}}));
-    window.dispatchEvent(new CustomEvent('maleta-save', {detail:{savedAt:Date.now()}}));
     return nickname;
   }
 
