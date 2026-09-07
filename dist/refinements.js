@@ -3,7 +3,6 @@ import {MISSION} from './content.js';
 const SAVE_KEY='misterio-maleta:partida-v1';
 const $=id=>document.getElementById(id);
 const readSave=()=>{try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'null');}catch{return null;}};
-const writeSave=save=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch{}};
 const currentNickname=()=>{try{return localStorage.getItem('misterio-maleta:mote')||readSave()?.state?.nickname||'Julito';}catch{return readSave()?.state?.nickname||'Julito';}};
 
 let previousNickname=null;
@@ -29,22 +28,17 @@ function refineVisibleDialogue(){
   const line=$('line');
   if(!line||!line.textContent)return;
   const text=line.textContent;
-  if(text===lastSeen)return;
-  lastSeen=text;
-  const replacement=replacements.get(text);
-  if(replacement){
-    line.textContent=replacement();
-    lastSeen=line.textContent;
-    return;
-  }
-  if(previousNickname&&previousNickname!==currentNickname()&&text.includes(previousNickname)){
-    line.textContent=text.split(previousNickname).join(currentNickname());
-    lastSeen=line.textContent;
+  if(text!==lastSeen){
+    lastSeen=text;
+    const replacement=replacements.get(text);
+    if(replacement){line.textContent=replacement();lastSeen=line.textContent;}
+    else if(previousNickname&&previousNickname!==currentNickname()&&text.includes(previousNickname)){
+      line.textContent=text.split(previousNickname).join(currentNickname());
+      lastSeen=line.textContent;
+    }
   }
   const speaker=$('speaker');
-  if(speaker&&previousNickname&&speaker.textContent===String(previousNickname).toUpperCase()){
-    speaker.textContent=String(currentNickname()).toUpperCase();
-  }
+  if(speaker&&previousNickname&&speaker.textContent===String(previousNickname).toUpperCase())speaker.textContent=String(currentNickname()).toUpperCase();
 }
 
 function isPedroMenu(choices){
@@ -78,9 +72,7 @@ let surpriseQueued=false;
 function checkHundredPercent(){
   const save=readSave(),state=save?.state;
   if(!state||state.pedro100Surprise||missionPercent(state)<100)return;
-  state.pedro100Surprise=true;
-  save.savedAt=Date.now();
-  writeSave(save);
+  window.dispatchEvent(new CustomEvent('maleta-set-state-flag',{detail:{key:'pedro100Surprise',value:true}}));
   surpriseQueued=true;
   queueSurprise(0);
 }
@@ -96,11 +88,7 @@ function queueSurprise(attempt){
   modal.showModal();
 }
 
-function tick(){
-  refineVisibleDialogue();
-  ensureNicknameChoice();
-}
-
+function tick(){refineVisibleDialogue();ensureNicknameChoice();}
 window.addEventListener('maleta-save',checkHundredPercent);
 setInterval(tick,180);
 setTimeout(checkHundredPercent,800);
