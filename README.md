@@ -131,3 +131,18 @@ El guardado es local a este navegador y origen: no se comparte entre dispositivo
 - Se recuperan los guardados de ambas ramas en el mismo navegador y origen. Se conservan mote libre, objetos, conversaciones y pistas. El guardado unificado tiene prioridad; si no existe, se recupera el guardado anterior válido más reciente cuando hay fecha. No se borran los originales al migrar. Las partidas guardadas en GitHub Pages y Sites pertenecen a orígenes distintos y no se transfieren entre ellos.
 
 `npm test` incluye las regresiones del mote, las dos migraciones y el premio pendiente tras una lectura prolongada.
+
+## Movimiento de Julito — rama feat/julito-movimiento-natural
+
+Parte de `develop` (`18a5d6e`). Conserva el fondo, los 25 hotspots, sus puntos de aproximación, diálogos, puzles y guardado.
+
+- Rutas con obstáculos de suelo para Prim y la mesa, además del contorno que excluye paredes, mostrador, sofás y plantas. Los segmentos se comprueban en cada cruce de límites, sin saltarse obstáculos por muestreo.
+- Avance con pasos de simulación pequeños, aceleración exponencial, frenado y consumo del tramo sobrante al llegar a una esquina. La componente vertical y la zancada usan la misma métrica de perspectiva.
+- Ocho orientaciones lógicas, estabilización en los límites y giro gradual durante el recorrido. Al llegar a un hotspot mira hacia su rectángulo original.
+- Ancla corporal por fotograma y escala común por hoja. La maleta deja de determinar el centro horizontal; agacharse reduce la altura real, en vez de ampliar el sprite agachado al tamaño de uno de pie. La respiración mantiene el apoyo fijo.
+- Reposo de pie, cuatro fases frontales/traseras coherentes con la misma mano y ocho fases laterales. Gestos breves al recoger periódicos y agacharse por la carta o el reglamento.
+- Composición ordenada por Y de los pies, con Prim y siluetas de mobiliario restauradas desde el fondo original para las ocultaciones.
+
+Se reutilizan las hojas existentes. Las diagonales usan vistas frontal, trasera o lateral: **no se han creado cuatro ciclos diagonales dibujados ni las cuatro hojas nuevas propuestas**. El teclado conserva los controles actuales; caminar sigue siendo point-and-click y el doble clic acelera.
+
+`node tests/movement.mjs` comprueba toda una malla de suelo, las colisiones, llegada, frenado y equivalencia de marcha a 30 y 144 Hz. `npm test` incluye estas pruebas junto a las de progreso y diálogos.

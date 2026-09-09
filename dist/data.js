@@ -43,6 +43,51 @@ locked:[['Julito','El ascensor está listo. Yo no.'],['Julito','Averiguar mi hab
 export function newState(){return {hasMasterKey:false,rewardShown:false,primTrusted:false,primClueSeen:false,bonusSeen:false,hintLevels:{},introCompleted:false,talkedToPedro:false,talkedToSenior:false,nickname:null,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,inspectedTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']};}
 export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[641,429],[781,599],[0,599]];
 export const WALK_NODES=[[229,551],[355,445],[460,465],[510,400],[530,360],[570,334],[606,287],[683,340],[686,367],[642,458],[400,404]];
-export function pointInPolygon(p,poly=WALK_POLYGON){let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>p[1])!==(b[1]>p[1]))&&(p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]))yes=!yes;}return yes && !(p[0]>205&&p[0]<337&&p[1]>394&&p[1]<447);}
-export function visible(a,b){const d=Math.hypot(a[0]-b[0],a[1]-b[1]);for(let i=0;i<=d;i+=3){const t=d?i/d:0;if(!pointInPolygon([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]))return false;}return pointInPolygon(b);}
-export function findPath(from,to){if(!pointInPolygon(to))return null;if(visible(from,to))return [to];const nodes=[from,...WALK_NODES,to],dist=nodes.map(()=>Infinity),prev=[],done=new Set;dist[0]=0;for(let k=0;k<nodes.length;k++){let a=-1;for(let i=0;i<nodes.length;i++)if(!done.has(i)&&(a<0||dist[i]<dist[a]))a=i;if(a<0||!isFinite(dist[a]))break;if(a===nodes.length-1)break;done.add(a);for(let b=0;b<nodes.length;b++){if(done.has(b)||!visible(nodes[a],nodes[b]))continue;const v=dist[a]+Math.hypot(nodes[a][0]-nodes[b][0],nodes[a][1]-nodes[b][1]);if(v<dist[b]){dist[b]=v;prev[b]=a;}}}if(!isFinite(dist.at(-1)))return null;let p=nodes.length-1,out=[];while(p!==0){out.unshift(nodes[p]);p=prev[p];}return out;}
+// Obstacles describe floor footprints, not clickable artwork. Keep HOTSPOTS intact.
+export const WALK_OBSTACLES=[
+ [[201,390],[341,390],[341,451],[201,451]], // Prim, including clearance for Julito's feet
+ [[647,394],[903,410],[903,504],[739,513],[647,455]] // table and legs
+];
+function inside(p,poly){let yes=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+ const a=poly[i],b=poly[j];
+ if(((a[1]>p[1])!==(b[1]>p[1]))&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])yes=!yes;
+}return yes;}
+export function pointInPolygon(p,poly=WALK_POLYGON){return p.every(Number.isFinite)&&inside(p,poly)&&(poly!==WALK_POLYGON||!WALK_OBSTACLES.some(o=>inside(p,o)));}
+const cross=(a,b)=>a[0]*b[1]-a[1]*b[0];
+// Split at every boundary crossing; midpoint checks cannot skip a thin obstacle.
+export function visible(a,b){
+ if(!pointInPolygon(a)||!pointInPolygon(b))return false;
+ const v=[b[0]-a[0],b[1]-a[1]],cuts=[0,1];
+ for(const poly of [WALK_POLYGON,...WALK_OBSTACLES])for(let i=0;i<poly.length;i++){
+  const c=poly[i],d=poly[(i+1)%poly.length],w=[d[0]-c[0],d[1]-c[1]],den=cross(v,w);
+  if(Math.abs(den)<1e-9)continue;
+  const offset=[c[0]-a[0],c[1]-a[1]],t=cross(offset,w)/den,u=cross(offset,v)/den;
+  if(t>0&&t<1&&u>=0&&u<=1)cuts.push(t);
+ }
+ cuts.sort((x,y)=>x-y);
+ return cuts.slice(1).every((t,i)=>{const m=(t+cuts[i])/2;return pointInPolygon([a[0]+v[0]*m,a[1]+v[1]*m]);});
+}
+const navigationNodes=[...WALK_NODES];
+for(const poly of [WALK_POLYGON,...WALK_OBSTACLES])for(const [x,y] of poly)for(const [dx,dy] of [[-5,-5],[5,-5],[5,5],[-5,5]]){
+ const p=[x+dx,y+dy];if(pointInPolygon(p))navigationNodes.push(p);
+}
+const routeDistance=(a,b)=>Math.hypot(a[0]-b[0],(a[1]-b[1])/.65);
+const navigationEdges=navigationNodes.map((a,i)=>navigationNodes.flatMap((b,j)=>i!==j&&visible(a,b)?[[j,routeDistance(a,b)]]:[]));
+export function findPath(from,to){
+ if(!pointInPolygon(from)||!pointInPolygon(to))return null;
+ if(visible(from,to))return [[...to]];
+ const nodes=[...navigationNodes,from,to],start=nodes.length-2,end=start+1;
+ const edges=navigationEdges.map(e=>e.slice());edges.push([],[]);
+ for(const index of [start,end])for(let i=0;i<start;i++)if(visible(nodes[index],nodes[i])){
+  const cost=routeDistance(nodes[index],nodes[i]);edges[index].push([i,cost]);edges[i].push([index,cost]);
+ }
+ const dist=nodes.map(()=>Infinity),prev=[],done=new Set();dist[start]=0;
+ for(let k=0;k<nodes.length;k++){
+  let a=-1;for(let i=0;i<nodes.length;i++)if(!done.has(i)&&(a<0||dist[i]<dist[a]))a=i;
+  if(a<0||!Number.isFinite(dist[a])||a===end)break;done.add(a);
+  for(const [b,cost] of edges[a])if(dist[a]+cost<dist[b]){dist[b]=dist[a]+cost;prev[b]=a;}
+ }
+ if(!Number.isFinite(dist[end]))return null;
+ const out=[];for(let p=end;p!==start;p=prev[p])out.unshift([...nodes[p]]);
+ return out;
+}

@@ -50,3 +50,13 @@ Comprobados mediante funciones reales con adaptadores DOM/audio:
 - Editor real de mote con adaptador DOM: aceptar, cancelar con Escape, opciones predefinidas, entrada vacía y texto con comillas sin interpolarlo en HTML.
 
 No se ha realizado una nueva verificación visual en navegador.
+
+
+## Julito: movimiento natural
+
+- Base: develop 18a5d6e; cambios restringidos a navegación, animación y composición de Julito.
+- PASS: 150 combinaciones verbo/hotspot y 625 pares de aproximación; guardado, motes, recompensas y final.
+- PASS: 653 destinos adicionales de suelo, colisión de cada segmento, orientación estable, esquinas sin pausa, doble clic, llegada y pasos equivalentes a 30/144 Hz.
+- PASS: renderizado con las funciones reales del juego y Canvas en seis posiciones: suelo central, conserjería/Prim, planta, ascensor, mesa y agachado. Inspección visual de escala, ancla y ocultación.
+- Pendiente: prueba manual de entrada táctil y reproducción de animaciones en navegadores reales. El entorno no dispone de Chromium y su descarga no estuvo disponible; la comprobación Canvas no sustituye esta prueba.
+- Arte: reutilizado. Ocho orientaciones lógicas no equivalen a ocho vistas dibujadas. No se han generado hojas isométricas nuevas.
