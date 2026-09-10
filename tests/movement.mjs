@@ -56,3 +56,15 @@ for(const id of ['correo','mundo','abc','marca']){
  assert.ok(findPath(HOTSPOTS.find(h=>h.id==='colegiala').at,target));
 }
 console.log('PASS: table lip, left corner, front leg and newspaper approach clearance.');
+
+// Even an injected straight route must stop at furniture, at both walking speeds.
+for(const hz of [30,60,144])for(const speed of [135,310]){
+ const player={x:600,y:455},path=[[750,455]];let energy=0,gait=0,blocked=false;
+ for(let i=0;i<hz*6&&path.length;i++){
+  const result=advanceWalk(player,path,energy,gait,speed,1/hz,'lobby');
+  energy=result.energy;gait=result.gait;blocked||=!!result.blocked;
+  assert.ok(pointInPolygon([player.x,player.y]));
+ }
+ assert.ok(blocked);assert.ok(player.x<618);assert.equal(energy,0);
+}
+console.log('PASS: per-step table collision guard at 30/60/144 Hz and both speeds.');

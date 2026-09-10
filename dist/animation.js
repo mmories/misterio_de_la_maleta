@@ -69,7 +69,12 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
    player.heading=headingFor(vx,vy,player.heading??2);
    player.angle=advanceHeading(player.angle,player.heading*Math.PI/4,tick);
    player.dir=headingDirection((Math.round(player.angle/(Math.PI/4))+8)%8);
-   player.x+=vx/d*amount;player.y+=vy/d*amount;
+   const candidate=[player.x+vx/d*amount,player.y+vy/d*amount];
+   // A second safety gate catches stale/direct routes as well as bad destinations.
+   if(scene==='lobby'&&!visible([player.x,player.y],candidate)){
+    path.length=0;return {energy:0,gait,steps,blocked:true};
+   }
+   [player.x,player.y]=candidate;
    gait+=amount/Math.max(34,78*scale)*Math.PI*2;
    steps+=Math.floor(gait/Math.PI)-before;travel-=amount;
    if(amount>=d){player.x=x;player.y=y;path.shift();}
@@ -77,3 +82,4 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
  }
  return {energy:path.length?energy:0,gait,steps};
 }
+import {visible} from './data.js';

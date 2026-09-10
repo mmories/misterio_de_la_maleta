@@ -44,3 +44,12 @@ score.playLogrones();score.toggleMusic();assert.equal(score.anthemUntil,0,'Mutin
 const stopped=[];const musicVoice={isMusic:true,stop:()=>stopped.push('music')},fxVoice={isMusic:false,stop:()=>stopped.push('fx')};
 score.voices.add(musicVoice);score.voices.add(fxVoice);score.stopVoices();assert.deepEqual(stopped,['music']);
 console.log('PASS: arranged A/B themes, cue isolation, mute and scene-change cancellation; effects preserved.');
+
+const recording=new AudioEngine();await recording.unlock();recording.anthemBuffer={duration:22.68};
+recording.playLogrones();assert.equal(recording.voices.size,1);
+assert.ok(recording.anthemUntil>recording.ctx.currentTime+22);
+const voice=[...recording.voices][0];assert.equal(voice.buffer,recording.anthemBuffer);
+recording.playLogrones();assert.equal(recording.voices.size,1,'Repeated lines cannot overlap recordings');
+recording.toggleMusic();assert.equal(recording.voices.size,0);
+assert.equal(recording.anthemUntil,0);
+console.log('PASS: supplied anthem recording plays once and obeys music mute.');

@@ -1,4 +1,4 @@
-// Procedural VGA score. All melodies are original and generated in real time.
+// Original procedural VGA score; the anthem uses the recording supplied by Mario.
 const THEMES={
  title:{bpm:94,transpose:0,wave:'triangle',progression:[45,41,48,43,45,50,41,43],melody:[69,72,76,72,71,67,64,67,69,74,77,74,72,69,67,64,76,74,72,69,71,72,74,67,72,71,69,65,68,71,69,0]},
  exterior:{bpm:82,transpose:-5,wave:'sine',progression:[45,48,41,43,45,40,41,43],melody:[69,0,76,74,72,0,71,67,65,0,69,72,71,68,69,0,72,0,77,76,74,0,72,69,67,0,71,74,72,69,67,0]},
@@ -24,6 +24,10 @@ export class AudioEngine{
    this.fxBus=this.ctx.createGain();this.fxBus.gain.value=.32;
    this.musicBus.connect(this.master);this.fxBus.connect(this.master);this.master.connect(this.ctx.destination);
    this.timer=setInterval(()=>this.schedule(),50);
+   if(typeof window.fetch==='function')this.anthemLoading=window.fetch('assets/logrones-reference.mp3')
+    .then(response=>{if(!response.ok)throw new Error('Anthem unavailable');return response.arrayBuffer();})
+    .then(data=>this.ctx.decodeAudioData(data)).then(buffer=>this.anthemBuffer=buffer)
+    .catch(()=>{this.anthemBuffer=null;});
   }
   if(this.ctx.state==='suspended')await this.ctx.resume();
  }
@@ -68,6 +72,13 @@ export class AudioEngine{
  }
  playLogrones(){
   if(!this.ctx||!this.music||this.ctx.currentTime<this.anthemUntil)return;
+  if(this.anthemBuffer){
+   this.stopVoices();const source=this.ctx.createBufferSource(),amp=this.ctx.createGain();
+   source.buffer=this.anthemBuffer;source.isMusic=true;amp.gain.value=2.4;
+   source.connect(amp);amp.connect(this.musicBus);this.voices.add(source);
+   const t=this.ctx.currentTime+.04;this.anthemUntil=t+source.buffer.duration;this.next=this.anthemUntil;this.step=0;
+   source.onended=()=>{this.voices.delete(source);source.disconnect();amp.disconnect();};source.start(t);return;
+  }
   // Provisional original stadium cue, NOT a transcription of the historic anthem.
   const t=this.ctx.currentTime+.04,beat=60/112;
   const melody=[67,67,72,72,74,72,69,67,69,69,74,76,74,72,67,0,72,72,76,76,77,76,74,72,74,69,71,72,67];

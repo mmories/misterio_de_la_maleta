@@ -32,8 +32,8 @@ const images={},frames={},W=960,H=600;
 let state=newState(),scene='title',verb='MIRAR',selected=null,hover=null,busy=false,epoch=0,last=performance.now(),clock=0;
 let player={x:229,y:551,dir:0,visible:false,pose:null},path=[],moveResolve=null,speed=135,gait=0,moveEnergy=0;
 let activeInteraction=null,activeSpeaker=null;
-let introTween=null,introStage=null,car={x:-220,y:430,door:0},entryAlpha=1;
-function cancelIntroMotion(){if(introTween){introTween.resolve(false);introTween=null;}introStage=null;entryAlpha=1;}
+let introTween=null,introStage=null,car={x:970,y:810,door:0},entryAlpha=1,cmdDoor=0;
+function cancelIntroMotion(){if(introTween){introTween.resolve(false);introTween=null;}introStage=null;entryAlpha=1;cmdDoor=0;}
 function animateIntro(duration,update,e){
  return new Promise(resolve=>{introTween={elapsed:0,duration,update,resolve};update(0);}).then(()=>assertEpoch(e));
 }
@@ -198,27 +198,58 @@ ctx.globalAlpha=.12;ctx.fillStyle='#ffe7a8';ctx.fillRect(382,382,105,1);ctx.fill
 }
 ctx.restore();
 }
+// Preserve fixed cells while removing the generator's light preview matte.
+function preparePassat(img){
+ const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+ const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);
+ const pixels=g.getImageData(0,0,c.width,c.height),d=pixels.data,w=c.width,h=c.height;
+ const seen=new Uint8Array(w*h),queue=[];
+ const visit=i=>{if(i<0||i>=w*h||seen[i])return;seen[i]=1;const k=i*4;
+  if(d[k+3]&&!(Math.min(d[k],d[k+1],d[k+2])>172&&Math.max(d[k],d[k+1],d[k+2])-Math.min(d[k],d[k+1],d[k+2])<22))return;
+  d[k+3]=0;queue.push(i);
+ };
+ for(let x=0;x<w;x++){visit(x);visit((h-1)*w+x);}
+ for(let y=0;y<h;y++){visit(y*w);visit(y*w+w-1);visit(y*w+w/2);}
+ for(let n=0;n<queue.length;n++){const i=queue[n],x=i%w;
+  for(const dy of [-1,0,1])for(const dx of [-1,0,1])if(x+dx>=0&&x+dx<w)visit(i+dy*w+dx);
+ }
+ g.putImageData(pixels,0,0);return c;
+}
+// Both car poses share a fixed cell and wheel anchor (512 × 384).
+function drawPassat(open=false){
+ ctx.drawImage(images.passat,open?512:0,0,512,384,Math.round(car.x),Math.round(car.y-136),200,150);
+}
 function drawExterior(){
  ctx.drawImage(images.exterior,0,0,W,H);
  if(scene!=='exterior'||!introStage||!images.passat)return;
- ctx.save();ctx.translate(Math.round(car.x),Math.round(car.y));
- ctx.fillStyle='rgba(8,12,18,.28)';ctx.beginPath();ctx.ellipse(94,-5,91,9,0,0,Math.PI*2);ctx.fill();
- ctx.drawImage(images.passat,0,-94,190,94);
- ctx.restore();
+ ctx.save();ctx.fillStyle='rgba(8,12,18,.28)';ctx.beginPath();ctx.ellipse(car.x+101,car.y-4,92,9,-.25,0,Math.PI*2);ctx.fill();
+ drawPassat();
+ if(car.door>0){ctx.globalAlpha=car.door;drawPassat(true);}
+ ctx.restore();drawCMDEntrance();
 }
 function drawCarDoor(){
- if(!introStage||car.door<=0)return;
- // Hinged front door, in the same palette and perspective as the Passat.
- const hingeX=car.x+100,hingeY=car.y-49,spread=car.door*24;
- ctx.save();ctx.translate(hingeX,hingeY);ctx.strokeStyle='#343b43';ctx.lineWidth=1;
- ctx.fillStyle='#899095';ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(-31-spread,-25+spread*.6);ctx.lineTo(-33-spread,17+spread*.6);ctx.lineTo(0,22);ctx.closePath();ctx.fill();ctx.stroke();
- ctx.fillStyle='#36516a';ctx.beginPath();ctx.moveTo(-3,-16);ctx.lineTo(-28-spread,-21+spread*.6);ctx.lineTo(-29-spread,-5+spread*.6);ctx.lineTo(-3,1);ctx.closePath();ctx.fill();
- ctx.fillStyle='#24292d';ctx.fillRect(-25-spread,5+spread*.6,6,2);ctx.restore();
+ if(!introStage||car.door<=0||!images.passat)return;
+ // Restore the open door in front of Julito as he steps out; the aperture stays behind him.
+ ctx.save();ctx.globalAlpha=car.door;ctx.beginPath();
+ ctx.rect(car.x+61,car.y-88,28,63);ctx.clip();drawPassat(true);ctx.restore();
+}
+function drawCMDEntrance(){
+ if(cmdDoor<=0)return;
+ // Left glass leaf, hinged to the existing jamb. Narrow it as it swings inward.
+ const x=496,y=384,w=14,h=37,leafWidth=Math.max(2,w*Math.cos(cmdDoor*Math.PI*.46));
+ ctx.save();ctx.fillStyle='#141b1b';ctx.fillRect(x,y,w,h);
+ ctx.fillStyle='#74613d';ctx.fillRect(x+1,y+2,w-2,2);
+ ctx.transform(1,cmdDoor*.18,0,1,x,y);
+ ctx.drawImage(images.exterior,x/W*images.exterior.width,y/H*images.exterior.height,w/W*images.exterior.width,h/H*images.exterior.height,0,0,leafWidth,h);
+ ctx.strokeStyle='#4a3e2a';ctx.lineWidth=1;ctx.strokeRect(0,0,leafWidth,h);
+ ctx.fillStyle='#dec987';ctx.fillRect(Math.max(1,leafWidth-3),20,1,5);ctx.restore();
 }
 function drawExteriorPlayer(){
  ctx.save();ctx.globalAlpha=entryAlpha;
- if(introStage==='entering'){ctx.beginPath();ctx.rect(496,383,27,43);ctx.clip();}
- renderPlayer();ctx.restore();drawCarDoor();
+ if(introStage==='entering'){ctx.beginPath();ctx.rect(496,383,15,43);ctx.clip();}
+ renderPlayer();ctx.restore();
+ if(player.y<car.y-70&&images.passat){drawPassat();if(car.door>0){ctx.save();ctx.globalAlpha=car.door;drawPassat(true);ctx.restore();}}
+ drawCarDoor();
 }
 function drawIntroFrame(){
  if(scene!=='exterior')return;
@@ -230,7 +261,7 @@ if(path.length){
  const movement=advanceWalk(player,path,moveEnergy,gait,speed,dt,scene);
  moveEnergy=movement.energy;gait=movement.gait;
  if(movement.steps)audio.effect('step');
- if(!path.length&&moveResolve){const resolve=moveResolve;moveResolve=null;resolve(true);}
+ if(!path.length&&moveResolve){const resolve=moveResolve;moveResolve=null;resolve(!movement.blocked);}
 }else moveEnergy=0;
 advanceThrownObject();
 ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,W,H);
@@ -272,21 +303,24 @@ for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
 }
 let left=w,right=-1,top=h,bottom=-1;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}g.putImageData(pixels,0,0);const pad=3,out=document.createElement('canvas');out.width=right-left+1+pad*2;out.height=bottom-top+1+pad*2;out.getContext('2d').drawImage(c,left,top,right-left+1,bottom-top+1,pad,pad,right-left+1,bottom-top+1);return out;}
 async function intro(){
- const e=++epoch;busy=true;player.visible=false;player.pose=null;path=[];carParked=false;cancelIntroMotion();car={x:-220,y:430,door:0};introStage='arrival';state=newState();refreshInventory();$('title').hidden=true;$('skip').hidden=false;$('sentence').textContent='Bilbao. Octubre de 1994.';audio.setTheme('exterior');setScene('exterior');$('transition').classList.toggle('intro-slate',true);showTransition('BILBAO<small>Octubre de 1994</small>');
+ const e=++epoch;busy=true;player.visible=false;player.pose=null;path=[];carParked=false;cancelIntroMotion();car={x:970,y:810,door:0};introStage='arrival';state=newState();refreshInventory();$('title').hidden=true;$('skip').hidden=false;$('sentence').textContent='Bilbao. Octubre de 1994.';audio.setTheme('exterior');setScene('exterior');$('transition').classList.toggle('intro-slate',true);showTransition('BILBAO<small>Octubre de 1994</small>');
  try{
   await sleep(1000);assertEpoch(e);hideTransition();audio.effect('engine');
-  await animateIntro(2.8,t=>{const eased=1-Math.pow(1-t,3);car.x=-220+520*eased;car.y=430+118*eased;},e);
+  await animateIntro(2.8,t=>{const eased=1-Math.pow(1-t,3);car.x=970-670*eased;car.y=810-262*eased;},e);
   carParked=true;introStage='exit';await sleep(220);assertEpoch(e);audio.effect('door');
   await animateIntro(.35,t=>car.door=t,e);
-  player.visible=true;player.x=386;player.y=538;player.dir=0;player.pose=8;
-  await animateIntro(.55,t=>{player.x=386+15*t;player.y=538+20*t;player.pose=t<.45?8:null;},e);
+  player.visible=true;player.x=395;player.y=515;player.dir=0;player.pose=8;
+  await animateIntro(.55,t=>{player.x=395-8*t;player.y=515+30*t;player.pose=t<.45?8:null;},e);
   audio.effect('case');player.pose=11;await sleep(380);assertEpoch(e);player.pose=null;
   await animateIntro(.3,t=>car.door=1-t,e);audio.effect('door');introStage='farewell';
   await lines([['Desde el coche','¡Escribe cuando llegues!'],['Julito','Pero si ya he llegado.']],false,e);
   await lines([['Julito','Bueno… pues aquí empieza todo.'],['Julito','Mi madre ha metido ropa para cuatro años. La carrera dura cinco.']],false,e);
-  introStage='approach';await walkRoute([[496,558],[496,483],[472,451],[491,435],[507,419]]);assertEpoch(e);
-  introStage='entering';audio.effect('door');
-  await animateIntro(.65,t=>{player.y=419-7*t;entryAlpha=1-t;},e);player.visible=false;
+  introStage='approach';await walkRoute([[275,545],[275,460],[438,452],[480,438],[503,423]]);assertEpoch(e);
+  introStage='opening-cmd';player.dir=2;audio.effect('door');
+  await animateIntro(.55,t=>cmdDoor=t,e);
+  introStage='entering';
+  await animateIntro(.7,t=>{player.y=423-10*t;entryAlpha=1-t;},e);player.visible=false;
+  introStage='closing-cmd';await animateIntro(.45,t=>cmdDoor=1-t,e);audio.effect('door');
   showTransition('COLEGIO MAYOR DEUSTO');await sleep(700);assertEpoch(e);enterLobby();const lobbyEpoch=epoch;busy=true;await walk([300,498]);assertEpoch(lobbyEpoch);busy=false;
  }catch(err){if(err.message!=='cancelled')throw err;}
 }
@@ -382,6 +416,6 @@ $('mission-meter').onclick=showMissionDetails;
 $('inventory-modal').onclose=()=>{maybeReward();};
 $('modal').onclose=()=>{const previous=$('modal').dataset.musicReturn;if(previous){delete $('modal').dataset.musicReturn;audio.setTheme(previous);}maybeReward();};$('close-modal').onclick=()=>$('modal').close();$('open-inventory').onclick=openInventory;$('close-inventory').onclick=()=>$('inventory-modal').close();$('show-hotspots').onclick=()=>{if(scene==='lobby')$('hotspots').classList.toggle('reveal');};
 document.addEventListener('keydown',e=>{if($('nickname-dialog')?.open)return;if($('inventory-modal').open){if(e.key==='Escape')$('inventory-modal').close();return;}if($('modal').open)return;if(e.key.toLowerCase()==='i'){e.preventDefault();openInventory();return;}if(e.code==='Space'){e.preventDefault();if(scene==='lobby')$('hotspots').classList.toggle('reveal');}if(e.key==='Escape'){if(scene==='exterior')enterLobby();else if(!$('card').hidden)$('card').querySelector('button').click();else if(!$('choices').hidden){if(nicknameSelection){nicknameSelection(state.nickname||'Julito');return;}$('choices').hidden=true;busy=false;checkpoint();maybeReward();}else{selected=null;refreshInventory();setSentence();}}if(e.key==='Enter'&&!$('speech').hidden)nextSpeech();});
-async function load(){try{await Promise.all(Object.entries({exterior:'exterior.png',passat:'passat.png',reception:'reception.png',receptionV2:'reception-v2.png',walk:'julito-walk.png',walkSmooth:'julito-walk-v3.png',isoWalk:'julito-walk_isometric.png',isoIdle:'julito-idle_isometric.png',isoPickup:'julito-interact_pickup.png',isoTalk:'julito-interact_talk.png',actions:'julito-actions.png',pedro:'pedro-actions.png',pedroIdle:'pedro-idle-v2.png',prim:'prim.png',primIdle:'prim-idle-v2.png',colegiala:'colegiala-sofa-v1.png',paperMundo:'newspaper-mundo-v2.png',paperCorreo:'newspaper-correo-v2.png',paperAbc:'newspaper-abc-v2.png',paperMarca:'newspaper-marca-v2.png'}).map(([key,file])=>new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{images[key]=img;resolve();};img.onerror=()=>reject(new Error('No se pudo cargar '+file));img.src='assets/'+file;})));frames.isoWalk=isometricFrames(images.isoWalk,8,4);frames.isoIdle=isometricFrames(images.isoIdle,2,4);frames.isoPickup=isometricFrames(images.isoPickup,3,2);frames.isoTalk=isometricFrames(images.isoTalk,2,2);frames.walk=anchorJulitoFrames(spriteFrames(images.walk));frames.walkSmooth=anchorJulitoFrames(transparentGridFrames(images.walkSmooth,8,3));frames.actions=anchorJulitoFrames(spriteFrames(images.actions));frames.pedro=spriteFrames(images.pedro);frames.pedroIdle=transparentGridFrames(images.pedroIdle,8,1);frames.primIdle=transparentGridFrames(images.primIdle,8,1,{cutoff:188,harden:false});frames.collegiala=transparentSingleSprite(images.colegiala);setHotspots();refreshInventory();$('hotspots').hidden=true;$('start').disabled=false;$('start').textContent='NUEVA PARTIDA';refreshContinue();requestAnimationFrame(()=>{fitToViewport();requestAnimationFrame(draw);});}catch(err){$('start').textContent='REINTENTAR';$('start').disabled=false;$('start').onclick=()=>location.reload();$('sentence').textContent=err.message+'. Pulsa reintentar.';console.error(err);}}
+async function load(){try{await Promise.all(Object.entries({exterior:'exterior.png',passat:'passat-arrival-v2.png',reception:'reception.png',receptionV2:'reception-v2.png',walk:'julito-walk.png',walkSmooth:'julito-walk-v3.png',isoWalk:'julito-walk_isometric.png',isoIdle:'julito-idle_isometric.png',isoPickup:'julito-interact_pickup.png',isoTalk:'julito-interact_talk.png',actions:'julito-actions.png',pedro:'pedro-actions.png',pedroIdle:'pedro-idle-v2.png',prim:'prim.png',primIdle:'prim-idle-v2.png',colegiala:'colegiala-sofa-v1.png',paperMundo:'newspaper-mundo-v2.png',paperCorreo:'newspaper-correo-v2.png',paperAbc:'newspaper-abc-v2.png',paperMarca:'newspaper-marca-v2.png'}).map(([key,file])=>new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{images[key]=img;resolve();};img.onerror=()=>reject(new Error('No se pudo cargar '+file));img.src='assets/'+file;})));images.passat=preparePassat(images.passat);frames.isoWalk=isometricFrames(images.isoWalk,8,4);frames.isoIdle=isometricFrames(images.isoIdle,2,4);frames.isoPickup=isometricFrames(images.isoPickup,3,2);frames.isoTalk=isometricFrames(images.isoTalk,2,2);frames.walk=anchorJulitoFrames(spriteFrames(images.walk));frames.walkSmooth=anchorJulitoFrames(transparentGridFrames(images.walkSmooth,8,3));frames.actions=anchorJulitoFrames(spriteFrames(images.actions));frames.pedro=spriteFrames(images.pedro);frames.pedroIdle=transparentGridFrames(images.pedroIdle,8,1);frames.primIdle=transparentGridFrames(images.primIdle,8,1,{cutoff:188,harden:false});frames.collegiala=transparentSingleSprite(images.colegiala);setHotspots();refreshInventory();$('hotspots').hidden=true;$('start').disabled=false;$('start').textContent='NUEVA PARTIDA';refreshContinue();requestAnimationFrame(()=>{fitToViewport();requestAnimationFrame(draw);});}catch(err){$('start').textContent='REINTENTAR';$('start').disabled=false;$('start').onclick=()=>location.reload();$('sentence').textContent=err.message+'. Pulsa reintentar.';console.error(err);}}
 fitToViewport();
 load();
