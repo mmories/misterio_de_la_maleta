@@ -2,7 +2,7 @@ export const VERBS=['MIRAR','COGER','USAR','HABLAR CON','DAR','EMPUJAR'];
 // Scene coordinates are in the 960 × 600 render space; only these data need changing with a new background.
 export const HOTSPOTS=[
 {id:'prim',name:'Prim',rect:[205,392,128,53],at:[355,474]},
-{id:'pedro',name:'Pedro',rect:[116,194,68,101],at:[355,445],look:'Pedro. Parece llevar aquí desde antes de que pusieran el edificio.'},
+{id:'pedro',name:'Pedro',rect:[116,194,68,101],at:[170,455],look:'Pedro. Parece llevar aquí desde antes de que pusieran el edificio.'},
 {id:'phone',name:'teléfono',rect:[162,273,46,19],at:[355,445],look:'Un teléfono de los de quedarse quieto para hablar. El cable decide hasta dónde llega la conversación.'},
 {id:'mailbox',name:'casillero del correo',rect:[65,181,58,85],at:[355,445],look:'Un casillero dentro de la conserjería. Las cartas tienen más intimidad que nosotros.',flag:'inspectedMailbox'},
 {id:'reception',name:'recepción',rect:[10,296,284,130],at:[355,445],look:'Cristal, madera y un señor con todas las llaves. Aquí está el verdadero rectorado.'},
