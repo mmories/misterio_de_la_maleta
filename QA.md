@@ -60,3 +60,9 @@ No se ha realizado una nueva verificación visual en navegador.
 - PASS: renderizado con las funciones reales del juego y Canvas en seis posiciones: suelo central, conserjería/Prim, planta, ascensor, mesa y agachado. Inspección visual de escala, ancla y ocultación.
 - Pendiente: prueba manual de entrada táctil y reproducción de animaciones en navegadores reales. El entorno no dispone de Chromium y su descarga no estuvo disponible; la comprobación Canvas no sustituye esta prueba.
 - Arte: reutilizado. Ocho orientaciones lógicas no equivalen a ocho vistas dibujadas. No se han generado hojas isométricas nuevas.
+
+## Puesta en escena de intro y Maria
+
+Titulo superpuesto al exterior y fundido breve a la llegada del coche; pausas revisadas y cancelacion protegida antes de toda aparicion de Julito. Maria tiene punto de aproximacion propio (714,382), orientacion final de Julito hacia ella, inclinacion de atencion y gesto de habla. Su nombre aparece en conversaciones posteriores; el progreso se registra tras terminar la presentacion. Sin cambios en textos de dialogos ni en puzles.
+
+PASS: 9 puntos de cancelacion de intro, punto final de Maria, liberacion de interaccion, 150 combinaciones verbo/objeto, 625 pares de hotspots y 657 destinos de suelo. Pendiente prueba manual de transiciones y conversacion en navegador real.

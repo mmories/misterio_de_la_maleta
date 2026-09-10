@@ -8,7 +8,7 @@ class Element{constructor(){this.hidden=true;this.children=[];this.style={};this
 class AudioStub{setTheme(){}effect(){}playLogrones(){this.anthem=(this.anthem||0)+1;}async unlock(){}}
 let nicknameAnswer=null;let timer=0;const timers=new Map();const memory=new Map(),storage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value)};const context={cleanNickname,openNicknameEditor:async()=>nicknameAnswer,...data,...animation,...content,...hints,readSave:()=>saves.readSave(storage),writeSave:state=>saves.writeSave(state,storage),AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
-vm.runInContext(src+`\nthis.testGame={maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
+vm.runInContext(src+`\nthis.testGame={intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
 async function run(action){let finished=false,error;Promise.resolve().then(action).then(()=>finished=true,e=>{error=e;finished=true;});for(let i=0;i<1500&&!finished;i++){game.tick(t+=100);game.next();game.closeCard();const nickname=game.getChoices().find(b=>b.textContent==='TOPO');if(nickname)nickname.onclick();const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();await Promise.resolve();await Promise.resolve();}if(error)throw error;assert.ok(finished,'Action must complete');}
 const h=id=>data.HOTSPOTS.find(x=>x.id===id);
@@ -96,3 +96,27 @@ assert.equal(game.inventoryItems().filter(id=>id==='masterKey').length,1);
 game.reset();elements.get('start').disabled=false;game.refreshContinue();
 assert.equal(elements.get('continue-game').hidden,false);assert.equal(elements.get('continue-game').disabled,false);
 console.log('PASS: custom/cancelled nickname, typing substitution, deferred 100% reward, visible master key, resume and load-independent Continue.');
+
+// Skipping during every early awaited stage must prevent stale intro mutations.
+for(let stop=0;stop<9;stop++){
+ timers.clear();game.reset();let done=false;
+ const pending=game.intro().then(()=>done=true);
+ for(let i=0;i<stop;i++){
+  const next=timers.entries().next().value;
+  if(next){timers.delete(next[0]);next[1]();}
+  await Promise.resolve();await Promise.resolve();
+ }
+ game.enterLobby();
+ for(let i=0;i<30&&!done;i++){
+  const callbacks=[...timers.values()];timers.clear();for(const fn of callbacks)fn();
+  game.next();await Promise.resolve();await Promise.resolve();
+ }
+ assert.ok(done,'Skipped intro must settle');await pending;
+ const snapshot=game.sceneSnapshot();assert.equal(snapshot.scene,'lobby');
+ assert.equal(snapshot.x,229);assert.equal(snapshot.y,551);assert.equal(snapshot.pose,null);
+ assert.equal(game.isBusy(),false);
+}
+game.begin();game.selectVerb('HABLAR CON');await run(()=>game.interact(h('colegiala')));
+assert.equal(game.sceneSnapshot().x,714);assert.equal(game.sceneSnapshot().y,382);
+assert.equal(game.sceneSnapshot().activeInteraction,null);
+console.log('PASS: nine intro cancellation stages and Maria approach/interaction cleanup.');

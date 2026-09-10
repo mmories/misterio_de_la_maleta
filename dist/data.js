@@ -14,7 +14,7 @@ export const HOTSPOTS=[
 {id:'comercia',name:'cartel de La Comercial',rect:[838,66,122,195],at:[683,340],look:'«LA COMERCIAL · Círculo de Comercio y Negocios». El cartel es bilingüe; la modestia, internacional.'},
 {id:'directory',name:'directorio',rect:[544,171,128,57],at:[570,334],look:'ASCENSORES, HABITACIONES, BIBLIOTECA. Una flecha hacia arriba y tres formas distintas de perderse.'},
 {id:'sofa',name:'sofá',rect:[740,285,210,103],at:[686,367],look:'Skay marrón. El material oficial de todas las instituciones españolas. Los cojines están sospechosamente abultados; alguien ha escondido algo ahí o el sofá guarda rencor.'},
-{id:'colegiala',name:'colegiala mayor',rect:[795,205,82,180],at:[686,367],look:'Una colegiala mayor, rubia, guapa y con expresión de saber perfectamente lo que hace. Julito confirma que la calidad humana del CMD parece notable; la del sofá, bastante menos.'},
+{id:'colegiala',name:'colegiala mayor',rect:[795,205,82,180],at:[714,382],face:[831,330],look:'Una colegiala mayor, rubia, guapa y con expresión de saber perfectamente lo que hace. Julito confirma que la calidad humana del CMD parece notable; la del sofá, bastante menos.'},
 {id:'radiator',name:'radiador',rect:[736,263,62,44],at:[686,367],look:'Un radiador de hierro. En Bilbao esto no es mobiliario: es infraestructura crítica.'},
 {id:'phoneBooths',name:'pasillo de las cabinas',rect:[707,205,34,57],at:[683,340],look:'Junto al radiador, el pasillo gira hacia la derecha. Se oye una conversación telefónica que parece haber empezado en septiembre.'},
 {id:'correo',name:'El Correo',rect:[672,386,86,36],at:[642,458],look:'El periódico regional. Ideal para enterarme de dónde he venido a meterme.'},
@@ -41,7 +41,7 @@ locked:[['Julito','El ascensor está listo. Yo no.'],['Julito','Averiguar mi hab
 };
 
 export function newState(){return {hasMasterKey:false,rewardShown:false,primTrusted:false,primClueSeen:false,bonusSeen:false,hintLevels:{},introCompleted:false,talkedToPedro:false,talkedToSenior:false,nickname:null,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,inspectedTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']};}
-export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[641,429],[781,599],[0,599]];
+export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[730,382],[725,389],[641,429],[781,599],[0,599]];
 export const WALK_NODES=[[229,551],[355,445],[460,465],[510,400],[530,360],[570,334],[606,287],[683,340],[686,367],[642,458],[400,404]];
 // Obstacles describe floor footprints, not clickable artwork. Keep HOTSPOTS intact.
 export const WALK_OBSTACLES=[

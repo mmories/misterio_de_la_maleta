@@ -146,3 +146,10 @@ kbd{font:inherit;border:1px solid #60716e;padding:2px 5px;margin-left:4px;color:
 #shell>footer #hint{flex:1 1 220px}
 #ask-hint{white-space:nowrap}
 #transition-text>button{margin:8px;font-size:12px}
+
+/* Establishing titles retain the exterior instead of cutting to black. */
+#transition.intro-slate{background:linear-gradient(0deg,#071019cc,#07101933);text-shadow:2px 3px 0 #000;align-items:flex-start;padding-top:12%;pointer-events:none}
+#transition.intro-slate #transition-text{animation:intro-title .6s ease-out both}
+@keyframes intro-title{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+#speech:has(#speaker){border-left:3px solid #e8be71}
+@media(prefers-reduced-motion:reduce){#transition.intro-slate #transition-text{animation:none}}
