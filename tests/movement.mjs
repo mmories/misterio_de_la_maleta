@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {advanceWalk,headingFor,perspectiveScale} from '../dist/animation.js';
+import {advanceWalk,arrivalPose,headingFor,perspectiveScale} from '../dist/animation.js';
 import {HOTSPOTS,findPath,pointInPolygon,visible} from '../dist/data.js';
 
 // Sample the whole reachable floor, not only the authored hotspot destinations.
@@ -68,3 +68,13 @@ for(const hz of [30,60,144])for(const speed of [135,310]){
  assert.ok(blocked);assert.ok(player.x<618);assert.equal(energy,0);
 }
 console.log('PASS: per-step table collision guard at 30/60/144 Hz and both speeds.');
+
+assert.deepEqual(arrivalPose(1),{x:300,y:548});
+let previous=arrivalPose(0);
+for(let i=1;i<=200;i++){
+ const pose=arrivalPose(i/200);assert.ok(pose.x<=previous.x&&pose.y<=previous.y);previous=pose;
+}
+const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+assert.ok(distance(arrivalPose(.98),arrivalPose(1))<distance(arrivalPose(.9),arrivalPose(.92))*.1);
+assert.ok(arrivalPose(.45).y>620,'Passat stays in the lower road lane before pulling in');
+console.log('PASS: road approach, fixed stop and gentle final braking.');

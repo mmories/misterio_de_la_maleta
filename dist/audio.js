@@ -1,4 +1,5 @@
-// Original procedural VGA score; the anthem uses the recording supplied by Mario.
+import {ANTHEM_BPM,ANTHEM_NOTES,ANTHEM_DURATION} from './anthem.js';
+// Procedural VGA score, including a sample-free instrumental anthem adaptation.
 const THEMES={
  title:{bpm:94,transpose:0,wave:'triangle',progression:[45,41,48,43,45,50,41,43],melody:[69,72,76,72,71,67,64,67,69,74,77,74,72,69,67,64,76,74,72,69,71,72,74,67,72,71,69,65,68,71,69,0]},
  exterior:{bpm:82,transpose:-5,wave:'sine',progression:[45,48,41,43,45,40,41,43],melody:[69,0,76,74,72,0,71,67,65,0,69,72,71,68,69,0,72,0,77,76,74,0,72,69,67,0,71,74,72,69,67,0]},
@@ -24,10 +25,6 @@ export class AudioEngine{
    this.fxBus=this.ctx.createGain();this.fxBus.gain.value=.32;
    this.musicBus.connect(this.master);this.fxBus.connect(this.master);this.master.connect(this.ctx.destination);
    this.timer=setInterval(()=>this.schedule(),50);
-   if(typeof window.fetch==='function')this.anthemLoading=window.fetch('assets/logrones-reference.mp3')
-    .then(response=>{if(!response.ok)throw new Error('Anthem unavailable');return response.arrayBuffer();})
-    .then(data=>this.ctx.decodeAudioData(data)).then(buffer=>this.anthemBuffer=buffer)
-    .catch(()=>{this.anthemBuffer=null;});
   }
   if(this.ctx.state==='suspended')await this.ctx.resume();
  }
@@ -72,31 +69,24 @@ export class AudioEngine{
  }
  playLogrones(){
   if(!this.ctx||!this.music||this.ctx.currentTime<this.anthemUntil)return;
-  if(this.anthemBuffer){
-   this.stopVoices();const source=this.ctx.createBufferSource(),amp=this.ctx.createGain();
-   source.buffer=this.anthemBuffer;source.isMusic=true;amp.gain.value=2.4;
-   source.connect(amp);amp.connect(this.musicBus);this.voices.add(source);
-   const t=this.ctx.currentTime+.04;this.anthemUntil=t+source.buffer.duration;this.next=this.anthemUntil;this.step=0;
-   source.onended=()=>{this.voices.delete(source);source.disconnect();amp.disconnect();};source.start(t);return;
-  }
-  // Provisional original stadium cue, NOT a transcription of the historic anthem.
-  const t=this.ctx.currentTime+.04,beat=60/112;
-  const melody=[67,67,72,72,74,72,69,67,69,69,74,76,74,72,67,0,72,72,76,76,77,76,74,72,74,69,71,72,67];
-  const lengths=melody.map((_,i)=>[7,14,23,28].includes(i)?1.5:i===15?.5:.5);
+  const t=this.ctx.currentTime+.04,beat=60/ANTHEM_BPM;
   this.stopVoices();let cursor=t;
-  melody.forEach((note,i)=>{
-   const duration=lengths[i]*beat;
+  ANTHEM_NOTES.forEach(([note,beats])=>{
+   const duration=beats*beat;
    if(note){
-    this.tone(note,cursor,duration*.88,{type:'square',gain:.13,detune:-3});
-    this.tone(note-12,cursor+.008,duration*.85,{type:'triangle',gain:.12});
+    this.tone(note,cursor,duration*.86,{type:'square',gain:.115,detune:-2});
+    this.tone(note-12,cursor+.006,duration*.82,{type:'triangle',gain:.09});
+    this.tone(note,cursor+beat*.75,duration*.6,{type:'sine',gain:.022});
    }
    cursor+=duration;
   });
-  this.anthemUntil=cursor+.15;this.next=this.anthemUntil;this.step=0;
+  this.anthemUntil=t+ANTHEM_DURATION+.5;this.next=this.anthemUntil;this.step=0;
   for(let i=0;t+i*beat<cursor;i++){
-   const time=t+i*beat,root=i<8?48:i<16?43:48;
-   this.tone(root+(i%2?7:0),time,beat*.7,{type:'triangle',gain:.14});
-   this.noise(time,.07,{frequency:i%2?1600:400,gain:i%2?.055:.07});
+   const time=t+i*beat,root=[49,44,46,44,49,42,44,49][Math.floor(i/4)%8];
+   this.tone(root+(i%2?7:0),time,beat*.65,{type:'triangle',gain:.14});
+   this.tone(32,time,.075,{type:'sine',gain:.13});
+   if(i%2)this.noise(time,.065,{frequency:1800,gain:.055});
+   this.noise(time+beat*.5,.024,{frequency:4500,gain:.018});
   }
  }
  effect(kind){

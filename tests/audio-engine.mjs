@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {AudioEngine} from '../dist/audio.js';
+import {ANTHEM_NOTES,ANTHEM_DURATION} from '../dist/anthem.js';
 
 class Param{setValueAtTime(){} exponentialRampToValueAtTime(){} cancelScheduledValues(){} setTargetAtTime(){}}
 class Node{constructor(){this.gain=new Param();this.frequency={value:0};this.detune={value:0};}connect(){return this;}disconnect(){}start(){}stop(){} }
@@ -45,11 +46,12 @@ const stopped=[];const musicVoice={isMusic:true,stop:()=>stopped.push('music')},
 score.voices.add(musicVoice);score.voices.add(fxVoice);score.stopVoices();assert.deepEqual(stopped,['music']);
 console.log('PASS: arranged A/B themes, cue isolation, mute and scene-change cancellation; effects preserved.');
 
-const recording=new AudioEngine();await recording.unlock();recording.anthemBuffer={duration:22.68};
-recording.playLogrones();assert.equal(recording.voices.size,1);
-assert.ok(recording.anthemUntil>recording.ctx.currentTime+22);
-const voice=[...recording.voices][0];assert.equal(voice.buffer,recording.anthemBuffer);
-recording.playLogrones();assert.equal(recording.voices.size,1,'Repeated lines cannot overlap recordings');
-recording.toggleMusic();assert.equal(recording.voices.size,0);
-assert.equal(recording.anthemUntil,0);
-console.log('PASS: supplied anthem recording plays once and obeys music mute.');
+const instrumental=new AudioEngine();await instrumental.unlock();
+instrumental.playLogrones();const voiceCount=instrumental.voices.size;
+assert.ok(voiceCount>ANTHEM_NOTES.length*2,'Lead, echo, bass and percussion are synthesized');
+assert.ok([...instrumental.voices].filter(v=>v.type==='square').length>40);
+assert.ok(instrumental.anthemUntil>instrumental.ctx.currentTime+ANTHEM_DURATION);
+instrumental.playLogrones();assert.equal(instrumental.voices.size,voiceCount,'Repeated lines cannot overlap');
+instrumental.toggleMusic();assert.equal(instrumental.voices.size,0);
+assert.equal(instrumental.anthemUntil,0);
+console.log('PASS: sample-free instrumental anthem, layered voices and music mute.');

@@ -10,6 +10,7 @@ let nicknameAnswer=null;let timer=0;const timers=new Map();const memory=new Map(
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
 vm.runInContext(src+`\nthis.testGame={choicesVisible:()=>!$('choices').hidden,intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction,introStage,car:{...car},entryAlpha,cmdDoor}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
+vm.runInContext("testGame.introDetails=()=>({introShot,speechVisible:!$('speech').hidden,door:car.door,y:player.y,visible:player.visible})",context);
 async function run(action){let finished=false,error;Promise.resolve().then(action).then(()=>finished=true,e=>{error=e;finished=true;});for(let i=0;i<1500&&!finished;i++){game.tick(t+=100);game.next();game.closeCard();const nickname=game.getChoices().find(b=>b.textContent==='TOPO');if(nickname)nickname.onclick();const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();await Promise.resolve();await Promise.resolve();}if(error)throw error;assert.ok(finished,'Action must complete');}
 const h=id=>data.HOTSPOTS.find(x=>x.id===id);
 for(const a of data.HOTSPOTS)for(const b of data.HOTSPOTS)assert.ok(data.findPath(a.at,b.at),a.id+' -> '+b.id);
@@ -122,22 +123,29 @@ assert.equal(game.sceneSnapshot().activeInteraction,null);
 console.log('PASS: nine intro cancellation stages and Maria approach/interaction cleanup.');
 
 // Complete the real cutscene and cancel independently during each animated stage.
-const stages=new Set();let arrivals=[];
+const stages=new Set();let arrivals=[],visibleIntroLines=0;
 game.reset();
 await run(async()=>{
  const pending=game.intro();
  while(game.sceneSnapshot().scene==='exterior'){
   const snap=game.sceneSnapshot();stages.add(snap.introStage);
+  const detail=game.introDetails();
+  if(detail.speechVisible){
+   visibleIntroLines++;assert.equal(snap.introStage,'farewell','No dialogue during parking or exit');
+   assert.equal(detail.door,0);assert.equal(detail.y,566);assert.equal(detail.visible,true);
+  }
   if(snap.introStage==='arrival')arrivals.push({...snap.car});
   await new Promise(resolve=>context.setTimeout(resolve));
  }
  await pending;
 });
-for(const stage of ['arrival','exit','farewell','approach','opening-cmd','entering','closing-cmd'])assert.ok(stages.has(stage),stage);
+const introStages=['arrival','parking','door-opening','exit','door-closing','farewell','wide-shot','approach','opening-cmd','entering','closing-cmd'];
+for(const stage of introStages)assert.ok(stages.has(stage),stage);
+assert.ok(visibleIntroLines>0);
 assert.equal(game.sceneSnapshot().scene,'lobby');assert.equal(game.isBusy(),false);
 assert.ok(arrivals.some(car=>car.x>300&&car.x<900),'Car must travel through intermediate positions');
 assert.ok(arrivals.every((car,i)=>i===0||(car.x<=arrivals[i-1].x&&car.y<=arrivals[i-1].y)),'Arrival must never reverse');
-for(const stage of ['arrival','exit','farewell','approach','opening-cmd','entering','closing-cmd']){
+for(const stage of introStages){
  timers.clear();game.reset();let cancelled=false;
  await run(async()=>{
   const pending=game.intro();
@@ -150,9 +158,10 @@ for(const stage of ['arrival','exit','farewell','approach','opening-cmd','enteri
   await pending;
  });
  const snap=game.sceneSnapshot();assert.equal(snap.scene,'lobby');assert.equal(snap.x,229);assert.equal(snap.y,551);
+ assert.equal(game.introDetails().introShot,0,'Skipping restores the fixed lobby camera');
  assert.equal(snap.introStage,null);assert.equal(snap.entryAlpha,1);assert.equal(snap.cmdDoor,0);assert.equal(game.isBusy(),false);
 }
-console.log('PASS: full car arrival, exit and CMD entrance; skipping all seven stages.');
+console.log('PASS: dialogue only after exit, full car/CMD sequence, skipping all eleven stages.');
 
 // Pedro's topic menu must return after every answer, including repeated topics.
 game.begin();game.getState().talkedToPedro=true;game.getState().hasKey310=true;

@@ -1,5 +1,14 @@
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 
+// A road-following curve with a steady approach and a short, smooth braking phase.
+export function arrivalPose(progress){
+ const t=clamp(progress,0,1),brake=.66;
+ const travelled=t<=brake?t:brake+(1-brake)*(1-(1-(t-brake)/(1-brake))**3)/3;
+ const u=travelled/(brake+(1-brake)/3),v=1-u;
+ return {x:900*v*v*v+3*650*v*v*u+3*390*v*u*u+300*u*u*u,
+  y:800*v*v*v+3*790*v*v*u+3*590*v*u*u+548*u*u*u};
+}
+
 export function perspectiveScale(scene,y){
  if(scene==='exterior')return clamp(.31+(y-375)/430,.31,.54);
  // Visual calibration for this fixed lobby: 72 px at elevator (y=287),
