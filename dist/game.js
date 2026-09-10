@@ -31,7 +31,16 @@ if(window.addEventListener)window.addEventListener('resize',fitToViewport);
 const images={},frames={},W=960,H=600;
 let state=newState(),scene='title',verb='MIRAR',selected=null,hover=null,busy=false,epoch=0,last=performance.now(),clock=0;
 let player={x:229,y:551,dir:0,visible:false,pose:null},path=[],moveResolve=null,speed=135,gait=0,moveEnergy=0;
-let arrivalStarted=-Infinity,activeInteraction=null,activeSpeaker=null;
+let activeInteraction=null,activeSpeaker=null;
+let introTween=null,introStage=null,car={x:-220,y:430,door:0},entryAlpha=1;
+function cancelIntroMotion(){if(introTween){introTween.resolve(false);introTween=null;}introStage=null;entryAlpha=1;}
+function animateIntro(duration,update,e){
+ return new Promise(resolve=>{introTween={elapsed:0,duration,update,resolve};update(0);}).then(()=>assertEpoch(e));
+}
+function advanceIntro(dt){
+ if(!introTween)return;const tween=introTween;tween.elapsed+=dt;const t=Math.min(1,tween.elapsed/tween.duration);tween.update(t);
+ if(t===1){introTween=null;tween.resolve(true);}
+}
 let carParked=false,pedroPose=3,elevatorOpen=0,breath=0,primAlert=0;
 let thrownObject=null,throwResolve=null;
 let nicknameSelection=null;
@@ -74,7 +83,7 @@ function faceHotspot(h){
  player.heading=headingFor(targetX-player.x,targetY-player.y,player.heading??2);
  player.angle=player.heading*Math.PI/4;player.dir=headingDirection(player.heading);
 }
-function playerScale(){return perspectiveScale(scene,player.y);}
+function playerScale(){return scene==='exterior'?Math.max(40,Math.min(74,42+(player.y-419)*.23))/154:perspectiveScale(scene,player.y);}
 function renderPlayer(){
  if(!player.visible)return;
  const scale=playerScale(),height=154*scale,moving=path.length>0;
@@ -189,17 +198,34 @@ ctx.globalAlpha=.12;ctx.fillStyle='#ffe7a8';ctx.fillRect(382,382,105,1);ctx.fill
 }
 ctx.restore();
 }
-function exteriorBackdrop(){return carParked&&images.exteriorArrived?images.exteriorArrived:images.exterior;}
 function drawExterior(){
  ctx.drawImage(images.exterior,0,0,W,H);
- if(carParked&&images.exteriorArrived){ctx.save();ctx.globalAlpha=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?1:Math.min(1,Math.max(0,(clock-arrivalStarted)/.55));ctx.drawImage(images.exteriorArrived,0,0,W,H);ctx.restore();}
+ if(scene!=='exterior'||!introStage||!images.passat)return;
+ ctx.save();ctx.translate(Math.round(car.x),Math.round(car.y));
+ ctx.fillStyle='rgba(8,12,18,.28)';ctx.beginPath();ctx.ellipse(94,-5,91,9,0,0,Math.PI*2);ctx.fill();
+ ctx.drawImage(images.passat,0,-94,190,94);
+ ctx.restore();
+}
+function drawCarDoor(){
+ if(!introStage||car.door<=0)return;
+ // Hinged front door, in the same palette and perspective as the Passat.
+ const hingeX=car.x+100,hingeY=car.y-49,spread=car.door*24;
+ ctx.save();ctx.translate(hingeX,hingeY);ctx.strokeStyle='#343b43';ctx.lineWidth=1;
+ ctx.fillStyle='#899095';ctx.beginPath();ctx.moveTo(0,-18);ctx.lineTo(-31-spread,-25+spread*.6);ctx.lineTo(-33-spread,17+spread*.6);ctx.lineTo(0,22);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.fillStyle='#36516a';ctx.beginPath();ctx.moveTo(-3,-16);ctx.lineTo(-28-spread,-21+spread*.6);ctx.lineTo(-29-spread,-5+spread*.6);ctx.lineTo(-3,1);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#24292d';ctx.fillRect(-25-spread,5+spread*.6,6,2);ctx.restore();
+}
+function drawExteriorPlayer(){
+ ctx.save();ctx.globalAlpha=entryAlpha;
+ if(introStage==='entering'){ctx.beginPath();ctx.rect(496,383,27,43);ctx.clip();}
+ renderPlayer();ctx.restore();drawCarDoor();
 }
 function drawIntroFrame(){
  if(scene!=='exterior')return;
  ctx.save();ctx.fillStyle='rgba(4,8,12,.88)';ctx.fillRect(0,0,W,18);ctx.fillRect(0,H-18,W,18);ctx.restore();
 }
 function receptionBackdrop(){return images.receptionV2||images.reception;}
-function draw(t){const dt=Math.min(Math.max((t-last)/1000,0),.1);last=t;clock+=dt;breath=Math.sin(clock*1.8);
+function draw(t){const dt=Math.min(Math.max((t-last)/1000,0),.1);last=t;clock+=dt;advanceIntro(dt);breath=Math.sin(clock*1.8);
 if(path.length){
  const movement=advanceWalk(player,path,moveEnergy,gait,speed,dt,scene);
  moveEnergy=movement.energy;gait=movement.gait;
@@ -208,7 +234,7 @@ if(path.length){
 }else moveEnergy=0;
 advanceThrownObject();
 ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,W,H);
-if(images.exterior){if(scene==='lobby'||scene==='end')ctx.drawImage(receptionBackdrop(),0,0,W,H);else drawExterior();drawAtmosphere();if(scene==='title'||scene==='exterior'){ctx.fillStyle=`rgba(255,221,125,${.035+.025*Math.sin(clock*2)})`;ctx.fillRect(502,390,19,13);if(scene==='exterior'){renderPlayer();drawIntroFrame();}}
+if(images.exterior){if(scene==='lobby'||scene==='end')ctx.drawImage(receptionBackdrop(),0,0,W,H);else drawExterior();drawAtmosphere();if(scene==='title'||scene==='exterior'){ctx.fillStyle=`rgba(255,221,125,${.035+.025*Math.sin(clock*2)})`;ctx.fillRect(502,390,19,13);if(scene==='exterior'){drawExteriorPlayer();drawIntroFrame();}}
 if(scene==='lobby'||scene==='end'){
 // Pedro is composited behind the existing desk and glazing, preserving depth.
 ctx.save();ctx.beginPath();ctx.rect(72,183,126,115);ctx.clip();const pedroIdle=pedroPose===3?Math.sin(clock*1.35):0,pedroShift=pedroPose===3?Math.sin(clock*.42)*.7:0,pedroFrame=pedroPose===3&&frames.pedroIdle?frames.pedroIdle[idleFrame(clock,8,.95)]:frames.pedro[pedroPose];renderFrame(pedroFrame,148+pedroShift,340-pedroIdle*.45,147);ctx.restore();
@@ -231,15 +257,25 @@ function spriteFrames(img){
 function transparentGridFrames(img,cols,rows,{cutoff=72,harden=true}={}){const out=[];for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const sx=Math.round(col*img.width/cols),ex=Math.round((col+1)*img.width/cols),sy=Math.round(row*img.height/rows),ey=Math.round((row+1)*img.height/rows),sw=ex-sx,sh=ey-sy,c=document.createElement('canvas');c.width=sw;c.height=sh;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,sx,sy,sw,sh,0,0,sw,sh);const pixels=g.getImageData(0,0,sw,sh),d=pixels.data;let l=sw,r=-1,t=sh,b=-1;for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const a=(y*sw+x)*4+3;if(d[a]<cutoff)d[a]=0;else if(harden)d[a]=d[a]<235?235:255;if(d[a]){l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);}}g.putImageData(pixels,0,0);const pad=2,frame=document.createElement('canvas');frame.width=Math.max(1,r-l+1+pad*2);frame.height=Math.max(1,b-t+1+pad*2);if(r>=l)frame.getContext('2d').drawImage(c,l,t,r-l+1,b-t+1,pad,pad,r-l+1,b-t+1);out.push(frame);}return out;}
 function transparentSingleSprite(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);const pixels=g.getImageData(0,0,c.width,c.height),d=pixels.data,w=c.width,h=c.height,seen=new Uint8Array(w*h),queue=[];const backdrop=i=>d[i*4]>225&&d[i*4+1]>225&&d[i*4+2]>225&&Math.max(d[i*4],d[i*4+1],d[i*4+2])-Math.min(d[i*4],d[i*4+1],d[i*4+2])<24;const visit=i=>{if(i<0||i>=w*h||seen[i]||!backdrop(i))return;seen[i]=1;d[i*4+3]=0;queue.push(i);};for(let x=0;x<w;x++){visit(x);visit((h-1)*w+x);}for(let y=0;y<h;y++){visit(y*w);visit(y*w+w-1);}for(let n=0;n<queue.length;n++){const i=queue[n],x=i%w;if(x)visit(i-1);if(x<w-1)visit(i+1);if(i>=w)visit(i-w);if(i<w*(h-1))visit(i+w);}let left=w,right=-1,top=h,bottom=-1;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}g.putImageData(pixels,0,0);const pad=3,out=document.createElement('canvas');out.width=right-left+1+pad*2;out.height=bottom-top+1+pad*2;out.getContext('2d').drawImage(c,left,top,right-left+1,bottom-top+1,pad,pad,right-left+1,bottom-top+1);return out;}
 async function intro(){
- const e=++epoch;busy=true;player.visible=false;player.pose=null;path=[];carParked=false;arrivalStarted=-Infinity;state=newState();refreshInventory();$('title').hidden=true;$('skip').hidden=false;$('sentence').textContent='Bilbao. Octubre de 1994.';audio.setTheme('exterior');setScene('exterior');$('transition').classList.toggle('intro-slate',true);showTransition('BILBAO<small>Octubre de 1994</small>');
+ const e=++epoch;busy=true;player.visible=false;player.pose=null;path=[];carParked=false;cancelIntroMotion();car={x:-220,y:430,door:0};introStage='arrival';state=newState();refreshInventory();$('title').hidden=true;$('skip').hidden=false;$('sentence').textContent='Bilbao. Octubre de 1994.';audio.setTheme('exterior');setScene('exterior');$('transition').classList.toggle('intro-slate',true);showTransition('BILBAO<small>Octubre de 1994</small>');
  try{
-  await sleep(1000);assertEpoch(e);hideTransition();audio.effect('engine');await sleep(350);assertEpoch(e);carParked=true;arrivalStarted=clock;await sleep(850);assertEpoch(e);
-  audio.effect('door');await sleep(300);assertEpoch(e);player.visible=true;player.x=580;player.y=482;player.dir=3;player.pose=11;audio.effect('case');await sleep(420);assertEpoch(e);player.pose=null;
+  await sleep(1000);assertEpoch(e);hideTransition();audio.effect('engine');
+  await animateIntro(2.8,t=>{const eased=1-Math.pow(1-t,3);car.x=-220+520*eased;car.y=430+118*eased;},e);
+  carParked=true;introStage='exit';await sleep(220);assertEpoch(e);audio.effect('door');
+  await animateIntro(.35,t=>car.door=t,e);
+  player.visible=true;player.x=386;player.y=538;player.dir=0;player.pose=8;
+  await animateIntro(.55,t=>{player.x=386+15*t;player.y=538+20*t;player.pose=t<.45?8:null;},e);
+  audio.effect('case');player.pose=11;await sleep(380);assertEpoch(e);player.pose=null;
+  await animateIntro(.3,t=>car.door=1-t,e);audio.effect('door');introStage='farewell';
   await lines([['Desde el coche','¡Escribe cuando llegues!'],['Julito','Pero si ya he llegado.']],false,e);
-  await lines([['Julito','Bueno… pues aquí empieza todo.'],['Julito','Mi madre ha metido ropa para cuatro años. La carrera dura cinco.']],false,e);await walkRoute([[558,468],[536,451],[513,427]]);assertEpoch(e);audio.effect('door');showTransition('COLEGIO MAYOR DEUSTO');await sleep(1100);assertEpoch(e);enterLobby();const lobbyEpoch=epoch;busy=true;await walk([300,498]);assertEpoch(lobbyEpoch);busy=false;
+  await lines([['Julito','Bueno… pues aquí empieza todo.'],['Julito','Mi madre ha metido ropa para cuatro años. La carrera dura cinco.']],false,e);
+  introStage='approach';await walkRoute([[496,558],[496,483],[472,451],[491,435],[507,419]]);assertEpoch(e);
+  introStage='entering';audio.effect('door');
+  await animateIntro(.65,t=>{player.y=419-7*t;entryAlpha=1-t;},e);player.visible=false;
+  showTransition('COLEGIO MAYOR DEUSTO');await sleep(700);assertEpoch(e);enterLobby();const lobbyEpoch=epoch;busy=true;await walk([300,498]);assertEpoch(lobbyEpoch);busy=false;
  }catch(err){if(err.message!=='cancelled')throw err;}
 }
-function enterLobby(){$('transition').classList.toggle('intro-slate',false);activeInteraction=null;const firstVisit=!state.introCompleted;epoch++;cancelSpeech();if(moveResolve)moveResolve(false);moveResolve=null;path=[];moveEnergy=0;gait=0;carParked=false;player={x:229,y:551,dir:1,visible:true,pose:null};$('title').hidden=true;$('skip').hidden=true;hideTransition();setScene('lobby');state.introCompleted=true;busy=false;audio.setTheme('lobby');$('hint').textContent='Elige un verbo y un objeto. Doble clic para caminar más deprisa.';setSentence();refreshInventory();refreshSceneObjects();updateMissionMeter();if(firstVisit)showObjective();checkpoint();requestAnimationFrame(fitToViewport);}
+function enterLobby(){cancelIntroMotion();$('transition').classList.toggle('intro-slate',false);activeInteraction=null;const firstVisit=!state.introCompleted;epoch++;cancelSpeech();if(moveResolve)moveResolve(false);moveResolve=null;path=[];moveEnergy=0;gait=0;carParked=false;player={x:229,y:551,dir:1,visible:true,pose:null};$('title').hidden=true;$('skip').hidden=true;hideTransition();setScene('lobby');state.introCompleted=true;busy=false;audio.setTheme('lobby');$('hint').textContent='Elige un verbo y un objeto. Doble clic para caminar más deprisa.';setSentence();refreshInventory();refreshSceneObjects();updateMissionMeter();if(firstVisit)showObjective();checkpoint();requestAnimationFrame(fitToViewport);}
 $('skip').onclick=()=>enterLobby();
 function setNickname(value){state.nickname=cleanNickname(value)||'Julito';checkpoint();return state.nickname;}
 function chooseNickname(){return new Promise(resolve=>{nicknameSelection=async(nickname,reply=[])=>{nicknameSelection=null;$('choices').hidden=true;$('choices').replaceChildren();setNickname(nickname);await lines(reply);resolve();};const options=[['Topo',[['Julito','Topo. Suena discreto.'],['Pedro','Perfecto. Ya solo te falta aprender a ver en la oscuridad.']]],['Julito',[['Julito','Prefiero Julito. Ya está suficientemente trabajado.'],['Pedro','Conservador en el nombre, aventurero con la maleta.']]],['El Riojano',[['Julito','El Riojano. Para que no haya dudas.'],['Pedro','No las había desde que empezaste a cantar.']]]];$('choices').replaceChildren();for(const [nickname,reply] of options){const b=document.createElement('button');b.textContent=nickname.toUpperCase();b.onclick=()=>nicknameSelection(nickname,reply);$('choices').append(b);}$('choices').hidden=false;});}
@@ -304,7 +340,7 @@ async function maybeReward(){
  try{await rewardMasterKey();}finally{busy=false;}
 }
 async function elevator(){if(!state.hasTobacco){await lines([['Julito','No puedo subir así. Me falta algo esencial para la supervivencia universitaria.'],['Julito','Necesito encontrar tabaco antes de enfrentarme a una tercera planta. Mi madre retiró el mío de la maleta en un acto que ella llama educación y yo llamo sabotaje.'],['Julito','Un hombre no vive solo de llave, maleta y puré naranja. Y yo, desde luego, no pienso averiguar cuánto dura sin tabaco.']]);return;}if(!state.hasKey310){await lines(TALK.locked);return;}if(!state.hasEmpiLetter){await lines([['Julito','Tengo la llave y provisiones, pero me falta algo.'],['Julito','Prim no deja de mirar hacia la entrada. Quizá debería conocer mejor a mi nuevo compañero.'],['Julito','Tiene pinta de encontrar cosas sin necesidad de formularios.']]);return;}if(!state.hasRulesBook){await lines([['Julito','Todavía me falta algo: conocer y llevar conmigo las normas de convivencia.'],['Julito','Pedro parece tener siempre un reglamento a mano, aunque no tiene cara de entregarlo por las buenas.']]);return;}state.calledElevator=true;checkpoint();if(missionStats().percent===100){await rewardMasterKey();if(!state.bonusSeen){await lines([['Pedro','Un momento. Te has fijado en todo. Eso a Empi también le pasaba.'],['Julito','¿Y cómo acabó?'],['Pedro','Dejó una habitación vacía y una maleta que yo habría jurado no volver a ver.'],['Pedro','Si llaman tres veces a la 310, pregunta quién es antes de abrir.'],['Julito','¿Y si llaman dos?'],['Pedro','Seré yo. Para que no fumes.']]);state.bonusSeen=true;checkpoint();}}audio.effect('elevator');for(let i=0;i<=20;i++){elevatorOpen=i/20;await sleep(35);}audio.effect('bell');await speak('Tercero Central. Con llave, tabaco, la carta de Empi y el reglamento: ahora sí puedo vivir… o investigar.');await walk([610,276]);audio.effect('case');primAlert=clock+8;await lines([['Julito','¿Ese golpe ha salido de dentro de la maleta?'],['Pedro','No la abras aquí.'],['Julito','¿Por qué?'],['Pedro','Porque aquí todavía puedo fingir que no sé nada.']]);player.visible=false;state.secondSceneCode=true;try{localStorage.setItem('maleta-segunda-escena','POTELE');}catch{}audio.setTheme('title');showTransition('TERCERO CENTRAL');await sleep(1600);setScene('end');$('transition-text').innerHTML='FIN DEL EPISODIO 0<small>Has conseguido una contraseña para la siguiente escena:</small>POTELE<small>Guárdala: podrás usarla desde ESCENAS.</small><small>'+ (state.bonusSeen?'100% · CONFIDENCIA DE PEDRO DESBLOQUEADA':'Exploración: '+missionStats().percent+'% · Vuelve para descubrir lo que falta.') +'</small><button id="return-lobby">SEGUIR EXPLORANDO</button><button id="again">VOLVER AL MENÚ</button>';$('return-lobby').onclick=()=>{state.calledElevator=false;elevatorOpen=0;enterLobby();};checkpoint();$('again').onclick=reset;$('sentence').textContent='Contraseña conseguida: POTELE';busy=false;}
-function reset(){$('transition').classList.toggle('intro-slate',false);activeInteraction=null;nicknameSelection=null;epoch++;cancelSpeech();clearTimeout(objectiveTimer);state=newState();selected=null;verb='MIRAR';elevatorOpen=0;path=[];player.visible=false;$('objective').hidden=true;hideTransition();setScene('title');$('title').hidden=false;$('choices').hidden=true;$('card').hidden=true;$('sentence').textContent='Una maleta. Una llave. Un buen comienzo.';$('hint').textContent='Una aventura para jugar sin prisa.';audio.setTheme('title');busy=false;refreshContinue();refreshInventory();refreshSceneObjects();for(const b of $('verbs').children)b.classList.toggle('active',b.textContent==='MIRAR');requestAnimationFrame(fitToViewport);}
+function reset(){cancelIntroMotion();if(moveResolve){moveResolve(false);moveResolve=null;}$('transition').classList.toggle('intro-slate',false);activeInteraction=null;nicknameSelection=null;epoch++;cancelSpeech();clearTimeout(objectiveTimer);state=newState();selected=null;verb='MIRAR';elevatorOpen=0;path=[];player.visible=false;$('objective').hidden=true;hideTransition();setScene('title');$('title').hidden=false;$('choices').hidden=true;$('card').hidden=true;$('sentence').textContent='Una maleta. Una llave. Un buen comienzo.';$('hint').textContent='Una aventura para jugar sin prisa.';audio.setTheme('title');busy=false;refreshContinue();refreshInventory();refreshSceneObjects();for(const b of $('verbs').children)b.classList.toggle('active',b.textContent==='MIRAR');requestAnimationFrame(fitToViewport);}
 $('canvas').onclick=async e=>{if(scene!=='lobby'||busy)return;const r=canvas.getBoundingClientRect(),to=[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H];if(pointInPolygon(to)){selected=null;refreshInventory();setSentence();await walk(to);await maybeReward();}};
 // Empty parts of the hotspot layer also allow walking.
 $('hotspots').onclick=e=>{if(e.target===$('hotspots'))$('canvas').onclick(e);};$('hotspots').ondblclick=e=>{if(scene==='lobby')speed=310;};
@@ -327,6 +363,6 @@ $('mission-meter').onclick=showMissionDetails;
 $('inventory-modal').onclose=()=>{maybeReward();};
 $('modal').onclose=()=>{const previous=$('modal').dataset.musicReturn;if(previous){delete $('modal').dataset.musicReturn;audio.setTheme(previous);}maybeReward();};$('close-modal').onclick=()=>$('modal').close();$('open-inventory').onclick=openInventory;$('close-inventory').onclick=()=>$('inventory-modal').close();$('show-hotspots').onclick=()=>{if(scene==='lobby')$('hotspots').classList.toggle('reveal');};
 document.addEventListener('keydown',e=>{if($('nickname-dialog')?.open)return;if($('inventory-modal').open){if(e.key==='Escape')$('inventory-modal').close();return;}if($('modal').open)return;if(e.key.toLowerCase()==='i'){e.preventDefault();openInventory();return;}if(e.code==='Space'){e.preventDefault();if(scene==='lobby')$('hotspots').classList.toggle('reveal');}if(e.key==='Escape'){if(scene==='exterior')enterLobby();else if(!$('card').hidden)$('card').querySelector('button').click();else if(!$('choices').hidden){if(nicknameSelection){nicknameSelection(state.nickname||'Julito');return;}$('choices').hidden=true;busy=false;checkpoint();maybeReward();}else{selected=null;refreshInventory();setSentence();}}if(e.key==='Enter'&&!$('speech').hidden)nextSpeech();});
-async function load(){try{await Promise.all(Object.entries({exterior:'exterior.png',exteriorArrived:'exterior-car-arrived.png',reception:'reception.png',receptionV2:'reception-v2.png',walk:'julito-walk.png',walkSmooth:'julito-walk-v3.png',isoWalk:'julito-walk_isometric.png',isoIdle:'julito-idle_isometric.png',isoPickup:'julito-interact_pickup.png',isoTalk:'julito-interact_talk.png',actions:'julito-actions.png',pedro:'pedro-actions.png',pedroIdle:'pedro-idle-v2.png',prim:'prim.png',primIdle:'prim-idle-v2.png',colegiala:'colegiala-sofa-v1.png',paperMundo:'newspaper-mundo-v2.png',paperCorreo:'newspaper-correo-v2.png',paperAbc:'newspaper-abc-v2.png',paperMarca:'newspaper-marca-v2.png'}).map(([key,file])=>new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{images[key]=img;resolve();};img.onerror=()=>reject(new Error('No se pudo cargar '+file));img.src='assets/'+file;})));frames.isoWalk=isometricFrames(images.isoWalk,8,4);frames.isoIdle=isometricFrames(images.isoIdle,2,4);frames.isoPickup=isometricFrames(images.isoPickup,3,2);frames.isoTalk=isometricFrames(images.isoTalk,2,2);frames.walk=anchorJulitoFrames(spriteFrames(images.walk));frames.walkSmooth=anchorJulitoFrames(transparentGridFrames(images.walkSmooth,8,3));frames.actions=anchorJulitoFrames(spriteFrames(images.actions));frames.pedro=spriteFrames(images.pedro);frames.pedroIdle=transparentGridFrames(images.pedroIdle,8,1);frames.primIdle=transparentGridFrames(images.primIdle,8,1,{cutoff:188,harden:false});frames.collegiala=transparentSingleSprite(images.colegiala);setHotspots();refreshInventory();$('hotspots').hidden=true;$('start').disabled=false;$('start').textContent='NUEVA PARTIDA';refreshContinue();requestAnimationFrame(()=>{fitToViewport();requestAnimationFrame(draw);});}catch(err){$('start').textContent='REINTENTAR';$('start').disabled=false;$('start').onclick=()=>location.reload();$('sentence').textContent=err.message+'. Pulsa reintentar.';console.error(err);}}
+async function load(){try{await Promise.all(Object.entries({exterior:'exterior.png',passat:'passat.png',reception:'reception.png',receptionV2:'reception-v2.png',walk:'julito-walk.png',walkSmooth:'julito-walk-v3.png',isoWalk:'julito-walk_isometric.png',isoIdle:'julito-idle_isometric.png',isoPickup:'julito-interact_pickup.png',isoTalk:'julito-interact_talk.png',actions:'julito-actions.png',pedro:'pedro-actions.png',pedroIdle:'pedro-idle-v2.png',prim:'prim.png',primIdle:'prim-idle-v2.png',colegiala:'colegiala-sofa-v1.png',paperMundo:'newspaper-mundo-v2.png',paperCorreo:'newspaper-correo-v2.png',paperAbc:'newspaper-abc-v2.png',paperMarca:'newspaper-marca-v2.png'}).map(([key,file])=>new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{images[key]=img;resolve();};img.onerror=()=>reject(new Error('No se pudo cargar '+file));img.src='assets/'+file;})));frames.isoWalk=isometricFrames(images.isoWalk,8,4);frames.isoIdle=isometricFrames(images.isoIdle,2,4);frames.isoPickup=isometricFrames(images.isoPickup,3,2);frames.isoTalk=isometricFrames(images.isoTalk,2,2);frames.walk=anchorJulitoFrames(spriteFrames(images.walk));frames.walkSmooth=anchorJulitoFrames(transparentGridFrames(images.walkSmooth,8,3));frames.actions=anchorJulitoFrames(spriteFrames(images.actions));frames.pedro=spriteFrames(images.pedro);frames.pedroIdle=transparentGridFrames(images.pedroIdle,8,1);frames.primIdle=transparentGridFrames(images.primIdle,8,1,{cutoff:188,harden:false});frames.collegiala=transparentSingleSprite(images.colegiala);setHotspots();refreshInventory();$('hotspots').hidden=true;$('start').disabled=false;$('start').textContent='NUEVA PARTIDA';refreshContinue();requestAnimationFrame(()=>{fitToViewport();requestAnimationFrame(draw);});}catch(err){$('start').textContent='REINTENTAR';$('start').disabled=false;$('start').onclick=()=>location.reload();$('sentence').textContent=err.message+'. Pulsa reintentar.';console.error(err);}}
 fitToViewport();
 load();
