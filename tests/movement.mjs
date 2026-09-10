@@ -47,3 +47,12 @@ for(let y=276;y<=599;y++){
  assert.ok(change>0&&change<.5,'Scale must grow continuously across the full lobby');
 }
 console.log('PASS: perspective reference heights and smooth growth through y=599.');
+
+// Regressions: left lip, corner and front leg were previously walkable.
+for(const point of [[642,400],[639,452],[647,470],[726,511],[740,521]])assert.equal(pointInPolygon(point),false,`Table clearance at ${point}`);
+for(const id of ['correo','mundo','abc','marca']){
+ const target=HOTSPOTS.find(h=>h.id===id).at;
+ assert.ok(target[0]<=610,'Leave room for the suitcase beside the tabletop');
+ assert.ok(findPath(HOTSPOTS.find(h=>h.id==='colegiala').at,target));
+}
+console.log('PASS: table lip, left corner, front leg and newspaper approach clearance.');
