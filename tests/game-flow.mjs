@@ -8,7 +8,7 @@ class Element{constructor(){this.hidden=true;this.children=[];this.style={};this
 class AudioStub{setTheme(){}effect(){}playLogrones(){this.anthem=(this.anthem||0)+1;}async unlock(){}}
 let nicknameAnswer=null;let timer=0;const timers=new Map();const memory=new Map(),storage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value)};const context={cleanNickname,openNicknameEditor:async()=>nicknameAnswer,...data,...animation,...content,...hints,readSave:()=>saves.readSave(storage),writeSave:state=>saves.writeSave(state,storage),AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
-vm.runInContext(src+`\nthis.testGame={intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction,introStage,car:{...car},entryAlpha}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
+vm.runInContext(src+`\nthis.testGame={choicesVisible:()=>!$('choices').hidden,intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction,introStage,car:{...car},entryAlpha}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
 async function run(action){let finished=false,error;Promise.resolve().then(action).then(()=>finished=true,e=>{error=e;finished=true;});for(let i=0;i<1500&&!finished;i++){game.tick(t+=100);game.next();game.closeCard();const nickname=game.getChoices().find(b=>b.textContent==='TOPO');if(nickname)nickname.onclick();const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();await Promise.resolve();await Promise.resolve();}if(error)throw error;assert.ok(finished,'Action must complete');}
 const h=id=>data.HOTSPOTS.find(x=>x.id===id);
@@ -153,3 +153,20 @@ for(const stage of ['arrival','exit','farewell','approach','entering']){
  assert.equal(snap.introStage,null);assert.equal(snap.entryAlpha,1);assert.equal(game.isBusy(),false);
 }
 console.log('PASS: full car arrival, exit and CMD entrance; skipping all five stages.');
+
+// Pedro's topic menu must return after every answer, including repeated topics.
+game.begin();game.getState().talkedToPedro=true;game.getState().hasKey310=true;
+game.getState().heardLogrones=true;game.selectVerb('HABLAR CON');await run(()=>game.interact(h('pedro')));
+for(const text of ['exactamente','norma','lloviendo','Canal+','maleta','Comercial','perro']){
+ const query=text==='lloviendo'?'tiempo':text;
+ const option=game.getChoices().find(b=>b.textContent.includes(query));assert.ok(option,query);
+ await run(()=>option.onclick());assert.ok(game.choicesVisible(),`Menu returns after ${query}`);assert.equal(game.isBusy(),true);
+ assert.ok(game.getChoices().some(b=>b.textContent.includes('exactamente')),'Read topics remain available');
+}
+const weather=game.getChoices().find(b=>b.textContent.includes('tiempo'));
+await run(async()=>{const first=weather.onclick();await weather.onclick();await first;});
+assert.ok(game.choicesVisible(),'Double activation must not swallow the menu');
+await run(()=>game.getChoices().find(b=>b.textContent.includes('Eso es todo')).onclick());
+assert.equal(game.choicesVisible(),false);assert.equal(game.isBusy(),false);
+game.selectVerb('HABLAR CON');await run(()=>game.interact(h('pedro')));assert.ok(game.choicesVisible(),'Pedro can be approached again');
+console.log('PASS: all Pedro topics, repeat questions, double activation and conversation reopening.');

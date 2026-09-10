@@ -153,3 +153,7 @@ kbd{font:inherit;border:1px solid #60716e;padding:2px 5px;margin-left:4px;color:
 @keyframes intro-title{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 #speech:has(#speaker){border-left:3px solid #e8be71}
 @media(prefers-reduced-motion:reduce){#transition.intro-slate #transition-text{animation:none}}
+
+/* Every Pedro topic remains reachable on short desktop and mobile viewports. */
+#choices{max-height:63%;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;touch-action:pan-y}
+#items img,#inventory-grid img{width:64px;height:54px;object-fit:contain;flex-shrink:0}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="54" viewBox="0 0 64 54">
+<path d="M17 7 43 4 50 10 48 48 21 51 15 46Z" fill="#382a26"/>
+<path d="m18 8 24-2 4 5-2 35-23 3-4-4Z" fill="#e8dfc9"/>
+<path d="m42 6 6 5-2 36-4-1Z" fill="#aaa18f"/>
+<path d="m18 20 25-3-1 19-23 3Z" fill="#bb262d"/>
+<path d="m20 21 21-2-1 3-19 2Z" fill="#e74843"/>
+<text x="20" y="31" font-family="Georgia,serif" font-size="4.3" font-weight="bold" fill="#fff0d3" transform="rotate(-6 20 31)">FORTUNA</text>
+<path d="m20 11 8-2 3 3 9-3m-20 32 6 2 7-2 8 2M19 15l9 1m-9 29 8 1m10-10 3 3" fill="none" stroke="#b2a691" stroke-width="1"/>
+<path d="m20 9 6 2 6-3 8 1-1 4-18 2Z" fill="#c4bcae"/>
+<path d="m22 8 4-1 1 7-4 1m8-8 4-1 1 7-4 1" fill="#f7edda"/>
+<path d="m20 38 3-1 1 10-3 1" fill="#fff2d4" opacity=".5"/>
+<text x="25" y="43" font-family="serif" font-size="3" fill="#736453">20 CIGARRILLOS</text>
+</svg>
