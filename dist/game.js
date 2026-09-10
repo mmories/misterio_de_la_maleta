@@ -80,14 +80,23 @@ function renderPlayer(){
  const motion=movementStyle({clock,gait,moving,direction:player.dir,scale,speed:moveEnergy});
  ctx.save();ctx.fillStyle='rgba(7,13,14,.3)';ctx.beginPath();ctx.ellipse(player.x,player.y-2,Math.max(11,height*.16)*motion.shadowScale,Math.max(3,height*.032),0,0,Math.PI*2);ctx.fill();ctx.restore();
  let f;
- if(player.pose!==null)f=frames.actions[player.pose];
+ const iso=scene==='lobby'&&frames.isoWalk;
+ const heading=((Math.round((player.angle??((player.heading??2)*Math.PI/4))/(Math.PI/4))%8)+8)%8;
+ const isoRow=[2,2,2,3,3,1,1,0][heading];
+ if(iso&&player.pickupFrame!==undefined)f=frames.isoPickup[(isoRow===1||isoRow===3?3:0)+player.pickupFrame];
+ else if(iso&&player.pose===null){
+  if(moving)f=frames.isoWalk[isoRow*8+motion.frame];
+  else if(player.talking&&isoRow>=2)f=frames.isoTalk[(isoRow-2)*2+Math.floor(clock*4)%2];
+  else f=frames.isoIdle[isoRow*2+(Math.floor(clock*2)%12===11?1:0)];
+ }
+ else if(player.pose!==null)f=frames.actions[player.pose];
  else if(!moving&&frames.walk)f=frames.walk[directionRow(player.dir)*4];
  else if(player.dir<2&&frames.walk)f=frames.walk[(player.dir===1?4:0)+Math.floor(motion.frame/2)];
  else if(frames.walkSmooth)f=frames.walkSmooth[walkFrameIndex(player.dir,motion.frame)];
  else f=frames.walk[(player.dir===1?4:0)+(moving?[1,2,3,2,1,0,3,0][motion.frame]:0)];
  if(!f)return;
  if(!f.foot){renderFrame(f,player.x,player.y,height,player.dir===3);return;}
- const factor=height/f.bodyHeight,flip=player.dir===3;
+ const factor=height/f.bodyHeight,flip=!f.isometric&&player.dir===3;
  // Keep feet planted: breathing changes body height by less than one pixel,
  // instead of translating the whole sprite and making its shoes float.
  const pulse=!moving&&player.pose===null?Math.sin(clock*(player.talking?3.5:1.8))*.003:0;
@@ -96,6 +105,16 @@ function renderPlayer(){
  ctx.scale(1,1+pulse);
  ctx.drawImage(f,Math.round(-f.foot[0]*factor),Math.round(-f.foot[1]*factor),Math.round(f.width*factor),Math.round(f.height*factor));
  ctx.restore();
+}
+// Do not crop these sheets: transparent padding contains the shared foot anchor.
+function isometricFrames(img,cols,rows){
+ const out=[];
+ for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+  const frame=document.createElement('canvas');frame.width=256;frame.height=256;
+  frame.getContext('2d').drawImage(img,col*256,row*256,256,256,0,0,256,256);
+  frame.foot=[128,224];frame.bodyHeight=190;frame.isometric=true;out.push(frame);
+ }
+ return out;
 }
 function anchorJulitoFrames(list){
  const bodyHeights=[];
@@ -115,10 +134,14 @@ function anchorJulitoFrames(list){
 }
 async function pickupMotion(floor=false){
  const e=epoch;
- for(const pose of floor?[8,9,8]:[7,4]){
-  assertEpoch(e);player.pose=pose;await sleep(120);
- }
- assertEpoch(e);player.pose=null;
+ try{
+  const poses=floor?[8,9,8]:[7,4];
+  for(let i=0;i<poses.length;i++){
+   assertEpoch(e);player.pose=poses[i];if(floor)player.pickupFrame=i;
+   await sleep(120);
+  }
+  assertEpoch(e);
+ }finally{delete player.pickupFrame;player.pose=null;}
 }
 // Restore only the silhouettes of foreground furniture from the fixed artwork.
 // The floor remains in the background and never erases Julito's shadow.
@@ -285,6 +308,6 @@ $('mission-meter').onclick=showMissionDetails;
 $('inventory-modal').onclose=()=>{maybeReward();};
 $('modal').onclose=()=>{const previous=$('modal').dataset.musicReturn;if(previous){delete $('modal').dataset.musicReturn;audio.setTheme(previous);}maybeReward();};$('close-modal').onclick=()=>$('modal').close();$('open-inventory').onclick=openInventory;$('close-inventory').onclick=()=>$('inventory-modal').close();$('show-hotspots').onclick=()=>{if(scene==='lobby')$('hotspots').classList.toggle('reveal');};
 document.addEventListener('keydown',e=>{if($('nickname-dialog')?.open)return;if($('inventory-modal').open){if(e.key==='Escape')$('inventory-modal').close();return;}if($('modal').open)return;if(e.key.toLowerCase()==='i'){e.preventDefault();openInventory();return;}if(e.code==='Space'){e.preventDefault();if(scene==='lobby')$('hotspots').classList.toggle('reveal');}if(e.key==='Escape'){if(scene==='exterior')enterLobby();else if(!$('card').hidden)$('card').querySelector('button').click();else if(!$('choices').hidden){if(nicknameSelection){nicknameSelection(state.nickname||'Julito');return;}$('choices').hidden=true;busy=false;checkpoint();maybeReward();}else{selected=null;refreshInventory();setSentence();}}if(e.key==='Enter'&&!$('speech').hidden)nextSpeech();});
-async function load(){try{await Promise.all(Object.entries({exterior:'exterior.png',exteriorArrived:'exterior-car-arrived.png',reception:'reception.png',receptionV2:'reception-v2.png',walk:'julito-walk.png',walkSmooth:'julito-walk-v3.png',actions:'julito-actions.png',pedro:'pedro-actions.png',pedroIdle:'pedro-idle-v2.png',prim:'prim.png',primIdle:'prim-idle-v2.png',colegiala:'colegiala-sofa-v1.png',paperMundo:'newspaper-mundo-v2.png',paperCorreo:'newspaper-correo-v2.png',paperAbc:'newspaper-abc-v2.png',paperMarca:'newspaper-marca-v2.png'}).map(([key,file])=>new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{images[key]=img;resolve();};img.onerror=()=>reject(new Error('No se pudo cargar '+file));img.src='assets/'+file;})));frames.walk=anchorJulitoFrames(spriteFrames(images.walk));frames.walkSmooth=anchorJulitoFrames(transparentGridFrames(images.walkSmooth,8,3));frames.actions=anchorJulitoFrames(spriteFrames(images.actions));frames.pedro=spriteFrames(images.pedro);frames.pedroIdle=transparentGridFrames(images.pedroIdle,8,1);frames.primIdle=transparentGridFrames(images.primIdle,8,1,{cutoff:188,harden:false});frames.collegiala=transparentSingleSprite(images.colegiala);setHotspots();refreshInventory();$('hotspots').hidden=true;$('start').disabled=false;$('start').textContent='NUEVA PARTIDA';refreshContinue();requestAnimationFrame(()=>{fitToViewport();requestAnimationFrame(draw);});}catch(err){$('start').textContent='REINTENTAR';$('start').disabled=false;$('start').onclick=()=>location.reload();$('sentence').textContent=err.message+'. Pulsa reintentar.';console.error(err);}}
+async function load(){try{await Promise.all(Object.entries({exterior:'exterior.png',exteriorArrived:'exterior-car-arrived.png',reception:'reception.png',receptionV2:'reception-v2.png',walk:'julito-walk.png',walkSmooth:'julito-walk-v3.png',isoWalk:'julito-walk_isometric.png',isoIdle:'julito-idle_isometric.png',isoPickup:'julito-interact_pickup.png',isoTalk:'julito-interact_talk.png',actions:'julito-actions.png',pedro:'pedro-actions.png',pedroIdle:'pedro-idle-v2.png',prim:'prim.png',primIdle:'prim-idle-v2.png',colegiala:'colegiala-sofa-v1.png',paperMundo:'newspaper-mundo-v2.png',paperCorreo:'newspaper-correo-v2.png',paperAbc:'newspaper-abc-v2.png',paperMarca:'newspaper-marca-v2.png'}).map(([key,file])=>new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{images[key]=img;resolve();};img.onerror=()=>reject(new Error('No se pudo cargar '+file));img.src='assets/'+file;})));frames.isoWalk=isometricFrames(images.isoWalk,8,4);frames.isoIdle=isometricFrames(images.isoIdle,2,4);frames.isoPickup=isometricFrames(images.isoPickup,3,2);frames.isoTalk=isometricFrames(images.isoTalk,2,2);frames.walk=anchorJulitoFrames(spriteFrames(images.walk));frames.walkSmooth=anchorJulitoFrames(transparentGridFrames(images.walkSmooth,8,3));frames.actions=anchorJulitoFrames(spriteFrames(images.actions));frames.pedro=spriteFrames(images.pedro);frames.pedroIdle=transparentGridFrames(images.pedroIdle,8,1);frames.primIdle=transparentGridFrames(images.primIdle,8,1,{cutoff:188,harden:false});frames.collegiala=transparentSingleSprite(images.colegiala);setHotspots();refreshInventory();$('hotspots').hidden=true;$('start').disabled=false;$('start').textContent='NUEVA PARTIDA';refreshContinue();requestAnimationFrame(()=>{fitToViewport();requestAnimationFrame(draw);});}catch(err){$('start').textContent='REINTENTAR';$('start').disabled=false;$('start').onclick=()=>location.reload();$('sentence').textContent=err.message+'. Pulsa reintentar.';console.error(err);}}
 fitToViewport();
 load();

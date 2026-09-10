@@ -146,3 +146,11 @@ Parte de `develop` (`18a5d6e`). Conserva el fondo, los 25 hotspots, sus puntos d
 Se reutilizan las hojas existentes. Las diagonales usan vistas frontal, trasera o lateral: **no se han creado cuatro ciclos diagonales dibujados ni las cuatro hojas nuevas propuestas**. El teclado conserva los controles actuales; caminar sigue siendo point-and-click y el doble clic acelera.
 
 `node tests/movement.mjs` comprueba toda una malla de suelo, las colisiones, llegada, frenado y equivalencia de marcha a 30 y 144 Hz. `npm test` incluye estas pruebas junto a las de progreso y diálogos.
+
+## Integracion de sprites diagonales y escala calibrada
+
+Las cuatro hojas transparentes estan ahora conectadas al hall: 32 fases de marcha, ocho de reposo, seis de recogida y cuatro de habla. Se recortan por celdas fijas de 256x256 sin eliminar el margen transparente; ancla (128,224) y altura base 190. Las poses narrativas especiales conservan su hoja original.
+
+La escala del hall se calibra visualmente con 72 px a y=287 y 190 px a y=551. Interpolacion lineal continua hasta el borde inferior, con limites de seguridad 64-216 px. Son proporciones aproximadas del fondo, no una reconstruccion metrica de su camara. La escala afecta dibujo y velocidad de desplazamiento; la cadencia sigue la distancia recorrida.
+
+Validacion: carga real Canvas de 50 celdas, canal alfa y ancla comun; composicion a tres profundidades; pruebas de navegacion y flujo narrativo. Pendiente prueba manual de animacion y entrada en navegador real.

@@ -2,8 +2,11 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 
 export function perspectiveScale(scene,y){
  if(scene==='exterior')return clamp(.31+(y-375)/430,.31,.54);
- const depth=clamp((y-275)/276,0,1);
- return .54+.96*Math.pow(depth,1.25);
+ // Visual calibration for this fixed lobby: 72 px at elevator (y=287),
+ // 190 px at entry (y=551). Continue smoothly through the lower floor.
+ // A linear screen-Y model approximates a level floor under perspective.
+ const height=72+(y-287)*(190-72)/(551-287);
+ return clamp(height,64,216)/154;
 }
 
 export function approachSpeed(current,target,dt){

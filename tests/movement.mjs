@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {advanceWalk,headingFor} from '../dist/animation.js';
+import {advanceWalk,headingFor,perspectiveScale} from '../dist/animation.js';
 import {HOTSPOTS,findPath,pointInPolygon,visible} from '../dist/data.js';
 
 // Sample the whole reachable floor, not only the authored hotspot destinations.
@@ -39,3 +39,11 @@ const p={x:450,y:500},route=[[450.01,500],[470,500]];
 advanceWalk(p,route,135,0,135,1/60,'lobby');assert.ok(p.x>450.1);
 for(const h of HOTSPOTS)assert.ok(findPath([229,551],h.at),h.id);
 console.log(`PASS: ${destinations} floor destinations, collision-safe segments, 30/144 Hz pacing, gait, stopping, corners and fast walking.`);
+
+assert.equal(perspectiveScale('lobby',287)*154,72);
+assert.equal(perspectiveScale('lobby',551)*154,190);
+for(let y=276;y<=599;y++){
+ const change=154*(perspectiveScale('lobby',y)-perspectiveScale('lobby',y-1));
+ assert.ok(change>0&&change<.5,'Scale must grow continuously across the full lobby');
+}
+console.log('PASS: perspective reference heights and smooth growth through y=599.');
