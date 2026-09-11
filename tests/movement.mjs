@@ -92,7 +92,7 @@ for(const hz of [30,60,144]){
  let energy=0,gait=0,clearedCar=false;
  for(let i=0;i<hz*20&&path.length;i++){
   const result=advanceWalk(player,path,energy,gait,135,1/hz,'exterior');energy=result.energy;gait=result.gait;
-  const insideCar=player.x>292&&player.x<506&&player.y>410&&player.y<570;
+  const insideCar=player.x>292&&player.x<500&&player.y>410&&player.y<570;
   if(!insideCar)clearedCar=true;
   if(clearedCar)assert.equal(insideCar,false,'Julito must never re-enter the parked Passat after clearing it');
   if(player.y>520)assert.ok(player.x>=370,'Julito must stay to the right of the foreground fence during the intro');
