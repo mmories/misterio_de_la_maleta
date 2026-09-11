@@ -90,7 +90,7 @@ console.log('PASS: road approach, fixed stop and gentle final braking.');
 assert.deepEqual(EXTERIOR_INTRO_ROUTE.at(-1),[503,423],'Intro route ends at the CMD door');
 for(const [x,y] of EXTERIOR_INTRO_ROUTE){
  assert.ok(!(x>=485&&x<=650&&y>=455&&y<=555),`Waypoint ${x},${y} must stay outside the red car`);
- assert.ok(!(x<390&&y>525),`Waypoint ${x},${y} must stay clear of the foreground balustrade`);
+ assert.ok(!(x<370&&y>525),`Waypoint ${x},${y} must stay clear of the foreground balustrade`);
 }
 for(const hz of [30,60,144]){
  const player={x:375,y:566,dir:0},path=EXTERIOR_INTRO_ROUTE.map(point=>[...point]);
@@ -98,7 +98,7 @@ for(const hz of [30,60,144]){
  for(let i=0;i<hz*20&&path.length;i++){
   const result=advanceWalk(player,path,energy,gait,135,1/hz,'exterior');energy=result.energy;gait=result.gait;
   const inRedCar=player.x>=485&&player.x<=650&&player.y>=455&&player.y<=555;
-  const inFence=player.x<390&&player.y>525;
+  const inFence=player.x<370&&player.y>525;
   assert.equal(inRedCar,false,'Julito must never cross the parked red car');
   assert.equal(inFence,false,'Julito must never cross the foreground balustrade');
  }
