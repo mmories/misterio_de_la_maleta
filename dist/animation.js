@@ -62,28 +62,36 @@ export function advanceHeading(current,target,dt){
  return current+Math.sign(delta)*Math.min(Math.abs(delta),dt*12);
 }
 
-// Intro blocking, authored like a classic point-and-click cut-scene rather than
-// free navigation. The Passat occupies roughly x=300..500 / y=412..562 at rest
-// and the foreground stone fence closes the lower-left approach. Julito first
-// clears the rear bumper along the road, then uses the narrow corridor at the
-// right-hand side of the car before turning towards the CMD entrance.
-// Every waypoint stays outside the car rectangle with a small visual margin.
+// Authored cut-scene blocking for the exterior. Julito finishes the door-exit
+// animation with his feet just in front of the Passat. From there he must never
+// cut diagonally through the car or the foreground stone fence. He first walks
+// towards camera, clears the whole front silhouette, travels laterally in the
+// foreground, and only then turns up the clear corridor at the car's right side.
 function makeExteriorIntroRouteSafe(player,path,scene){
  if(scene!=='exterior'||path.__introSafe||!path.length)return;
  const final=path[path.length-1];
  const isIntroApproach=final&&Math.abs(final[0]-503)<2&&Math.abs(final[1]-423)<2&&player.y>540;
  if(!isIntroApproach)return;
  path.splice(0,path.length,
-  [505,574], // clear the bumper while staying below it
-  [515,566], // step outside the Passat's right edge
-  [518,548],
-  [520,520],
-  [522,490],
-  [520,462],
-  [512,440],
+  [382,590], // step fully in front of the parked car
+  [525,590], // pass the bumper in foreground, never through the body
+  [536,568], // turn behind the car's right edge
+  [536,540],
+  [534,510],
+  [530,480],
+  [520,452],
+  [510,435],
   [503,423]  // CMD entrance
  );
  Object.defineProperty(path,'__introSafe',{value:true,configurable:true});
+}
+
+function hitsParkedPassat(candidate,path,scene){
+ if(scene!=='exterior'||!path.__introSafe)return false;
+ const [x,y]=candidate;
+ // Foot-position exclusion rectangle. The 6px margin prevents the lower body
+ // and suitcase from visually slicing the bumper even when the feet are clear.
+ return x>292&&x<506&&y>410&&y<570;
 }
 
 // Consume all waypoints reached this tick: no frame-long pauses at corners.
@@ -110,8 +118,8 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
    player.angle=advanceHeading(player.angle,player.heading*Math.PI/4,tick);
    player.dir=headingDirection((Math.round(player.angle/(Math.PI/4))+8)%8);
    const candidate=[player.x+vx/d*amount,player.y+vy/d*amount];
-   // A second safety gate catches stale/direct routes as well as bad destinations.
-   if(scene==='lobby'&&!visible([player.x,player.y],candidate)){
+   // Safety gates catch stale/direct routes as well as bad destinations.
+   if((scene==='lobby'&&!visible([player.x,player.y],candidate))||hitsParkedPassat(candidate,path,scene)){
     path.length=0;return {energy:0,gait,steps,blocked:true};
    }
    [player.x,player.y]=candidate;
