@@ -55,12 +55,13 @@ function updateProgressHud(){
 }
 
 function activeVerb(){return [...document.querySelectorAll('#verbs button')].find(b=>b.classList.contains('active'))?.textContent?.trim()||'MIRAR';}
-function syncUmbrellaArt(){const prop=$('umbrella-prop');if(prop)prop.src=hasUmbrella()?'assets/umbrella-stand-deusto-empty-v1.png':'assets/umbrella-stand-deusto-v1.png';}
+const umbrellaAsset=()=>hasUmbrella()?'assets/umbrella-stand-deusto-empty-v2.png':'assets/umbrella-stand-deusto-v2.png';
+function syncUmbrellaArt(){const prop=$('umbrella-prop');if(prop&&prop.getAttribute('src')!==umbrellaAsset())prop.src=umbrellaAsset();}
 function ensureUmbrella(){
  const layer=$('hotspots'),scene=$('scene');if(!layer||!scene||$('hotspot-umbrella')){syncUmbrellaArt();return;}
- const prop=document.createElement('img');prop.id='umbrella-prop';prop.alt='';prop.setAttribute('aria-hidden','true');prop.decoding='async';prop.loading='eager';scene.append(prop);syncUmbrellaArt();
+ const prop=document.createElement('img');prop.id='umbrella-prop';prop.alt='';prop.setAttribute('aria-hidden','true');prop.decoding='sync';prop.loading='eager';prop.draggable=false;scene.append(prop);syncUmbrellaArt();
  const b=document.createElement('button');b.id='hotspot-umbrella';b.type='button';b.setAttribute('aria-label','paragüero con paraguas azul');b.innerHTML='<span>paragüero</span>';
- Object.assign(b.style,{left:'70.4%',top:'45.8%',width:'6.2%',height:'17.2%'});
+ Object.assign(b.style,{left:'70.2%',top:'44.8%',width:'7.5%',height:'20.5%'});
  b.addEventListener('click',e=>{e.stopPropagation();const verb=activeVerb();if(hasUmbrella()){
    if(verb==='MIRAR'||verb==='USAR')modal('<small>PARAGÜERO</small><h2>Ahora está vacío</h2><p>El paragüero sigue en su sitio. El paraguas azul Deusto está ya en mi inventario.</p>');
    else toast('El paraguas ya está en tu inventario.');
@@ -78,7 +79,7 @@ function syncInventory(){
  const owned=hasUmbrella(),native=$('items'),grid=$('inventory-grid');if(!native)return;
  const total=native.children.length+(owned?1:0);if($('count'))$('count').textContent=String(total).padStart(2,'0');if($('inventory-total'))$('inventory-total').textContent=String(total).padStart(2,'0');
  if(!owned||!grid||grid.querySelector('[data-polish-item="umbrella"]'))return;
- const b=document.createElement('button');b.type='button';b.dataset.polishItem='umbrella';b.setAttribute('role','listitem');b.setAttribute('aria-label','paraguas azul Deusto');b.innerHTML='<img class="inventory-umbrella" src="assets/umbrella-stand-deusto-v1.png" alt=""><span>paraguas azul Deusto</span><small>OBJETO NARRATIVO</small>';
+ const b=document.createElement('button');b.type='button';b.dataset.polishItem='umbrella';b.setAttribute('role','listitem');b.setAttribute('aria-label','paraguas azul Deusto');b.innerHTML='<img class="inventory-umbrella" src="assets/umbrella-stand-deusto-v2.png" alt=""><span>paraguas azul Deusto</span><small>OBJETO NARRATIVO</small>';
  b.addEventListener('click',()=>modal('<small>INVENTARIO</small><h2>Paraguas azul Deusto</h2><p>Largo, azul oscuro, mango de madera y aspecto suficientemente solemne como para pertenecer al Colegio.</p><p>Puede ser útil más adelante. O para un duelo a muerte, si el reglamento no dice nada al respecto.</p>'));
  grid.append(b);
 }
