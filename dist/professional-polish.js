@@ -26,22 +26,22 @@ function explorationStats(){
  const done=rows.reduce((n,r)=>n+r.done,0),total=rows.reduce((n,r)=>n+r.total,0);
  return {rows,done,total,percent:total?Math.round(done/total*100):0};
 }
-function modal(html){const d=$('modal'),body=$('modal-body');if(!d||!body)return;body.innerHTML=html;if(!d.open)d.showModal();}
+function modal(html,{progress=false}={}){const d=$('modal'),body=$('modal-body');if(!d||!body)return;d.classList.toggle('progress-modal',progress);body.innerHTML=html;if(!d.open)d.showModal();}
 function toast(text){const el=$('toast');if(!el)return;el.textContent=text;el.hidden=false;clearTimeout(window.__polishToast);window.__polishToast=setTimeout(()=>el.hidden=true,3200);}
 
 function progressModal(){
  const r=readyStats(),x=explorationStats(),p=exploration();
  const explorationRows=x.rows.map(row=>`<p class="exploration-row"><span>${row.label}</span><b>${row.done} / ${row.total}</b><i><em style="width:${row.percent}%"></em></i></p>`).join('');
- modal(`<div class="mission-report professional-report"><small>MISIÓN 0 · LA LLEGADA</small><h2>Progreso del episodio</h2><div class="progress-detail-grid"><section class="progress-detail-card progress-required"><header><div><small>PROGRESIÓN</small><h3>Para subir</h3></div><strong>${r.done}/${r.total}</strong></header><p class="progress-explainer">Estos cuatro requisitos son los únicos que desbloquean el ascensor.</p><div class="required-grid">${r.rows.map(item=>`<p class="required-row ${item.done?'done':''}"><span>${item.done?'✓':'○'}</span><b>${item.label}</b><em>${item.done?'LISTO':'PENDIENTE'}</em></p>`).join('')}</div></section><section class="progress-detail-card progress-exploration"><header><div><small>COMPLETISMO</small><h3>Exploración</h3></div><strong>${p}%</strong></header><p class="progress-explainer">No bloquea la historia. Mide cuánto has investigado la recepción.</p><div class="exploration-breakdown">${explorationRows}</div><p class="completion-copy">${p===100?'100%: has agotado las interacciones contabilizadas y desbloqueado la recompensa de completista.':p>=95?'Nivel explorador alcanzado: queda muy poco para el 100% y su recompensa.':'Puedes terminar el episodio sin completar esta columna.'}</p></section></div><p class="secret-note">Los objetos narrativos para capítulos futuros, como el paraguas, se conservan aparte y no cuentan para abrir el ascensor ni para inflar artificialmente el 100%.</p></div>`);
+ modal(`<div class="mission-report professional-report"><small>MISIÓN 0 · LA LLEGADA</small><h2>Progreso del episodio</h2><div class="progress-detail-grid"><section class="progress-detail-card progress-required"><header><div><small>PROGRESIÓN</small><h3>Para subir</h3></div><strong>${r.done}/${r.total}</strong></header><p class="progress-explainer">Estos cuatro requisitos son los únicos que desbloquean el ascensor.</p><div class="required-grid">${r.rows.map(item=>`<p class="required-row ${item.done?'done':''}"><span>${item.done?'✓':'○'}</span><b>${item.label}</b><em>${item.done?'LISTO':'PENDIENTE'}</em></p>`).join('')}</div></section><section class="progress-detail-card progress-exploration"><header><div><small>COMPLETISMO</small><h3>Exploración</h3></div><strong>${p}%</strong></header><p class="progress-explainer">No bloquea la historia. Mide cuánto has investigado la recepción.</p><div class="exploration-breakdown">${explorationRows}</div><p class="completion-copy">${p===100?'100%: has agotado las interacciones contabilizadas y desbloqueado la recompensa de completista.':p>=95?'Nivel explorador alcanzado: queda muy poco para el 100% y su recompensa.':'Puedes terminar el episodio sin completar esta columna.'}</p></section></div><p class="secret-note">Los objetos narrativos para capítulos futuros, como el paraguas, se conservan aparte y no cuentan para abrir el ascensor ni para inflar artificialmente el 100%.</p></div>`,{progress:true});
 }
 
 function ensureProgressHud(){
  if($('progress-hud'))return;
- const host=$('scene');if(!host)return;
+ const host=document.querySelector('.topbar');if(!host)return;
  const b=document.createElement('button');b.id='progress-hud';b.type='button';b.hidden=true;b.title='Ver avance y exploración';b.setAttribute('aria-label','Abrir detalle de avance y exploración');
  b.innerHTML='<span class="progress-combined"><small>PROGRESO</small><strong><span id="ready-count">0/4</span><i>·</i><span id="explore-count">0%</span></strong><em><span>AVANCE</span><span>EXPLORACIÓN</span></em></span>';
  b.addEventListener('click',progressModal);
- host.append(b);
+ const location=$('location');location?host.insertBefore(b,location):host.append(b);
 }
 function updateProgressHud(){
  ensureProgressHud();const hud=$('progress-hud'),mission=$('mission-meter');if(!hud||!mission)return;
@@ -60,7 +60,7 @@ function ensureUmbrella(){
  const layer=$('hotspots'),scene=$('scene');if(!layer||!scene||$('hotspot-umbrella')){syncUmbrellaArt();return;}
  const prop=document.createElement('img');prop.id='umbrella-prop';prop.alt='';prop.setAttribute('aria-hidden','true');prop.decoding='async';scene.append(prop);syncUmbrellaArt();
  const b=document.createElement('button');b.id='hotspot-umbrella';b.type='button';b.setAttribute('aria-label','paragüero con paraguas azul');b.innerHTML='<span>paragüero</span>';
- Object.assign(b.style,{left:'88.4%',top:'51.8%',width:'9.2%',height:'22.5%'});
+ Object.assign(b.style,{left:'89.1%',top:'51.4%',width:'9.6%',height:'23.4%'});
  b.addEventListener('click',e=>{e.stopPropagation();const verb=activeVerb();if(hasUmbrella()){
    if(verb==='MIRAR'||verb==='USAR')modal('<small>PARAGÜERO</small><h2>Ahora está vacío</h2><p>El paragüero sigue en su sitio. El paraguas azul Deusto está ya en mi inventario.</p>');
    else toast('El paraguas ya está en tu inventario.');
@@ -103,5 +103,6 @@ window.addEventListener('storage',scheduleRefresh);
 window.addEventListener('load',scheduleRefresh);
 document.addEventListener('click',scheduleRefresh,true);
 document.addEventListener('keydown',scheduleRefresh,true);
+const modalDialog=$('modal');if(modalDialog)modalDialog.addEventListener('close',()=>modalDialog.classList.remove('progress-modal'));
 setInterval(refresh,1200);
 refresh();
