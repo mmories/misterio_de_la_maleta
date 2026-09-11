@@ -30,11 +30,13 @@ function ensureProgressHud(){
 }
 function updateProgressHud(){
  ensureProgressHud();const hud=$('progress-hud'),mission=$('mission-meter');if(!hud||!mission)return;
- hud.hidden=mission.hidden;const r=readyStats(),p=exploration();
- const rc=$('ready-count'),ec=$('explore-count');if(rc)rc.textContent=`${r.done}/${r.total}`;if(ec)ec.textContent=`${p}%`;
+ const shouldHide=mission.hidden;
+ if(hud.hidden!==shouldHide)hud.hidden=shouldHide;
+ const r=readyStats(),p=exploration();
+ const rc=$('ready-count'),ec=$('explore-count');if(rc&&rc.textContent!==`${r.done}/${r.total}`)rc.textContent=`${r.done}/${r.total}`;if(ec&&ec.textContent!==`${p}%`)ec.textContent=`${p}%`;
  hud.classList.toggle('ready',r.done===r.total);hud.classList.toggle('near-complete',p>=95&&p<100);hud.classList.toggle('complete',p===100);
  mission.title='Exploración opcional: acciones descubiertas en recepción';
- const label=mission.querySelector('span');if(label)label.textContent='EXPLORACIÓN';
+ const label=mission.querySelector('span');if(label&&label.textContent!=='EXPLORACIÓN')label.textContent='EXPLORACIÓN';
  if(p>=95&&p<100){try{if(localStorage.getItem(EXPLORER_KEY)!=='1'){localStorage.setItem(EXPLORER_KEY,'1');toast('EXPLORADOR 95% · Casi todo descubierto. El 100% aún guarda una recompensa.');}}catch{}}
 }
 
@@ -81,8 +83,11 @@ function bark(){
 function wirePrim(){const p=$('hotspot-prim');if(!p||p.dataset.barkWired)return;p.dataset.barkWired='1';p.addEventListener('click',()=>{if($('sound')?.getAttribute('aria-pressed')!=='false')bark();},{capture:true});}
 
 function refresh(){updateProgressHud();ensureUmbrella();wirePrim();syncInventory();}
-const observer=new MutationObserver(()=>queueMicrotask(refresh));
-observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class','aria-pressed']});
-window.addEventListener('storage',refresh);
-setInterval(refresh,700);
+let refreshTimer=null;
+function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,60);}
+window.addEventListener('storage',scheduleRefresh);
+window.addEventListener('load',scheduleRefresh);
+document.addEventListener('click',scheduleRefresh,true);
+document.addEventListener('keydown',scheduleRefresh,true);
+setInterval(refresh,1200);
 refresh();
