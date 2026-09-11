@@ -1,3 +1,5 @@
+import {visible} from './data.js';
+
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
 
 // A road-following curve with a steady approach and a short, smooth braking phase.
@@ -8,6 +10,21 @@ export function arrivalPose(progress){
  return {x:900*v*v*v+3*650*v*v*u+3*390*v*u*u+300*u*u*u,
   y:800*v*v*v+3*790*v*v*u+3*590*v*u*u+548*u*u*u};
 }
+
+// Cinematic route authored against exterior.png. It is only used after the
+// family Passat has pulled away. The path stays on the road, clears the right
+// end of the foreground balustrade and turns towards the entrance before the
+// parked red car can overlap Julito's silhouette.
+export const EXTERIOR_INTRO_ROUTE=[
+ [405,555],
+ [430,535],
+ [450,510],
+ [462,486],
+ [468,462],
+ [478,445],
+ [491,432],
+ [503,423]
+];
 
 export function perspectiveScale(scene,y){
  if(scene==='exterior')return clamp(.31+(y-375)/430,.31,.54);
@@ -62,44 +79,9 @@ export function advanceHeading(current,target,dt){
  return current+Math.sign(delta)*Math.min(Math.abs(delta),dt*12);
 }
 
-// Authored cut-scene blocking for the exterior. Julito finishes the door-exit
-// animation with his feet just in front of the Passat. From there he must never
-// cut diagonally through the car or the foreground stone fence. He first walks
-// towards camera, clears the whole front silhouette, travels laterally in the
-// foreground, and only then turns up the clear corridor at the car's right side.
-function makeExteriorIntroRouteSafe(player,path,scene){
- if(scene!=='exterior'||path.__introSafe||!path.length)return;
- const final=path[path.length-1];
- const isIntroApproach=final&&Math.abs(final[0]-503)<2&&Math.abs(final[1]-423)<2&&player.y>540;
- if(!isIntroApproach)return;
- path.splice(0,path.length,
-  [382,590], // step fully in front of the parked car
-  [525,590], // pass the bumper in foreground, never through the body
-  [536,568], // turn behind the car's right edge
-  [536,540],
-  [534,510],
-  [530,480],
-  [520,452],
-  [510,435],
-  [503,423]  // CMD entrance
- );
- Object.defineProperty(path,'__introSafe',{value:true,configurable:true});
-}
-
-const insideParkedPassat=([x,y])=>x>292&&x<500&&y>410&&y<570;
-function reentersParkedPassat(from,candidate,path,scene){
- if(scene!=='exterior'||!path.__introSafe)return false;
- // The scripted exit animation leaves Julito's feet at the lower edge of the
- // car silhouette. Let him move OUT of that volume; once clear, never allow a
- // later segment to enter it again. The right edge is kept exact so the final
- // entrance coordinate at x=503 remains reachable.
- return !insideParkedPassat(from)&&insideParkedPassat(candidate);
-}
-
 // Consume all waypoints reached this tick: no frame-long pauses at corners.
 // Simulating small steps also keeps acceleration consistent on slow displays.
 export function advanceWalk(player,path,energy,gait,speed,dt,scene){
- makeExteriorIntroRouteSafe(player,path,scene);
  let steps=0;
  for(let time=Math.min(.1,Math.max(0,dt));time>1e-8&&path.length;){
   const tick=Math.min(time,1/120);time-=tick;
@@ -120,8 +102,8 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
    player.angle=advanceHeading(player.angle,player.heading*Math.PI/4,tick);
    player.dir=headingDirection((Math.round(player.angle/(Math.PI/4))+8)%8);
    const from=[player.x,player.y],candidate=[player.x+vx/d*amount,player.y+vy/d*amount];
-   // Safety gates catch stale/direct routes as well as bad destinations.
-   if((scene==='lobby'&&!visible(from,candidate))||reentersParkedPassat(from,candidate,path,scene)){
+   // A second safety gate catches stale/direct routes as well as bad destinations.
+   if(scene==='lobby'&&!visible(from,candidate)){
     path.length=0;return {energy:0,gait,steps,blocked:true};
    }
    [player.x,player.y]=candidate;
@@ -132,4 +114,3 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
  }
  return {energy:path.length?energy:0,gait,steps};
 }
-import {visible} from './data.js';
