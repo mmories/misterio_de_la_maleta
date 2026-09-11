@@ -20,11 +20,11 @@ function toast(text){const el=$('toast');if(!el)return;el.textContent=text;el.hi
 function ensureProgressHud(){
  if($('progress-hud'))return;
  const host=$('scene');if(!host)return;
- const b=document.createElement('button');b.id='progress-hud';b.type='button';b.hidden=true;b.title='Ver requisitos para avanzar y porcentaje de exploración';
- b.innerHTML='<span class="progress-ready"><small>AVANCE</small><strong id="ready-count">0/4</strong></span><span class="progress-explore"><small>EXPLORACIÓN</small><strong id="explore-count">0%</strong></span>';
+ const b=document.createElement('button');b.id='progress-hud';b.type='button';b.hidden=true;b.title='Ver avance y exploración';
+ b.innerHTML='<span class="progress-combined"><small>PROGRESO</small><strong><span id="ready-count">0/4</span><i>·</i><span id="explore-count">0%</span></strong><em><span>PARA AVANZAR</span><span>EXPLORACIÓN</span></em></span>';
  b.addEventListener('click',()=>{
   const r=readyStats(),p=exploration();
-  modal(`<div class="mission-report professional-report"><small>MISIÓN 0 · LA LLEGADA</small><h2>Progreso del episodio</h2><section class="mission-objective"><small>PARA AVANZAR</small><p>Estos requisitos desbloquean el ascensor. No forman parte del reto de completar el 100%.</p></section><div class="required-grid">${r.rows.map(x=>`<p class="required-row ${x.done?'done':''}"><span>${x.done?'✓':'○'}</span><b>${x.label}</b><em>${x.done?'LISTO':'PENDIENTE'}</em></p>`).join('')}</div><section class="completion-block"><small>EXPLORACIÓN OPCIONAL</small><div class="report-score">${p}%</div><p>${p===100?'Recepción completada al 100%. Has agotado las interacciones contabilizadas y desbloqueado la recompensa de completista.':p>=95?'Nivel explorador alcanzado. Ya has descubierto casi todo; todavía queda algo para el 100%.':'Puedes terminar el episodio sin llegar al 100%. El porcentaje premia mirar, conversar y probar interacciones opcionales.'}</p><p class="secret-note">Los objetos narrativos para capítulos futuros, como el paraguas, se guardan aparte y nunca bloquean el avance.</p></section></div>`);
+  modal(`<div class="mission-report professional-report"><small>MISIÓN 0 · LA LLEGADA</small><h2>Progreso del episodio</h2><section class="mission-objective"><small>PARA AVANZAR</small><p>Estos cuatro requisitos desbloquean el ascensor. Son independientes del porcentaje de exploración.</p></section><div class="required-grid">${r.rows.map(x=>`<p class="required-row ${x.done?'done':''}"><span>${x.done?'✓':'○'}</span><b>${x.label}</b><em>${x.done?'LISTO':'PENDIENTE'}</em></p>`).join('')}</div><section class="completion-block"><small>EXPLORACIÓN OPCIONAL</small><div class="report-score">${p}%</div><p>${p===100?'Recepción completada al 100%. Has agotado las interacciones contabilizadas y desbloqueado la recompensa de completista.':p>=95?'Nivel explorador alcanzado. Ya has descubierto casi todo; todavía queda algo para el 100%.':'Puedes terminar el episodio sin llegar al 100%. El porcentaje premia mirar, conversar y probar interacciones opcionales.'}</p><p class="secret-note">Los objetos narrativos para capítulos futuros, como el paraguas, se guardan aparte y nunca bloquean el avance.</p></section></div>`);
  });
  host.append(b);
 }
@@ -41,31 +41,31 @@ function updateProgressHud(){
 }
 
 function activeVerb(){return [...document.querySelectorAll('#verbs button')].find(b=>b.classList.contains('active'))?.textContent?.trim()||'MIRAR';}
+function syncUmbrellaArt(){const prop=$('umbrella-prop');if(prop)prop.src=hasUmbrella()?'assets/umbrella-stand-deusto-empty-v1.png':'assets/umbrella-stand-deusto-v1.png';}
 function ensureUmbrella(){
- const layer=$('hotspots'),scene=$('scene');if(!layer||!scene||$('hotspot-umbrella'))return;
- const prop=document.createElement('div');prop.id='umbrella-prop';prop.setAttribute('aria-hidden','true');prop.innerHTML='<i></i><b></b>';
- scene.append(prop);
- const b=document.createElement('button');b.id='hotspot-umbrella';b.type='button';b.setAttribute('aria-label','paragüero');b.innerHTML='<span>paragüero</span>';
- Object.assign(b.style,{left:'30.6%',top:'58.5%',width:'5.3%',height:'17%'});
+ const layer=$('hotspots'),scene=$('scene');if(!layer||!scene||$('hotspot-umbrella')){syncUmbrellaArt();return;}
+ const prop=document.createElement('img');prop.id='umbrella-prop';prop.alt='';prop.setAttribute('aria-hidden','true');prop.decoding='async';scene.append(prop);syncUmbrellaArt();
+ const b=document.createElement('button');b.id='hotspot-umbrella';b.type='button';b.setAttribute('aria-label','paragüero con paraguas azul');b.innerHTML='<span>paragüero</span>';
+ Object.assign(b.style,{left:'86.8%',top:'56.5%',width:'7%',height:'20%'});
  b.addEventListener('click',e=>{e.stopPropagation();const verb=activeVerb();if(hasUmbrella()){
-   if(verb==='MIRAR'||verb==='USAR')modal('<small>PARAGÜERO</small><h2>Ya no está</h2><p>El paraguas está en tu inventario. Bilbao ha perdido una pequeña batalla.</p>');
+   if(verb==='MIRAR'||verb==='USAR')modal('<small>PARAGÜERO</small><h2>Ahora está vacío</h2><p>El paragüero sigue en su sitio. El paraguas azul Deusto está ya en mi inventario.</p>');
    else toast('El paraguas ya está en tu inventario.');
    return;
   }
   if(verb==='COGER'){
-   setUmbrella();prop.classList.add('empty');toast('Has cogido: PARAGUAS');syncInventory();
-   modal('<small>OBJETO CONSEGUIDO</small><h2>Paraguas</h2><p>Negro, largo y sorprendentemente sólido.</p><p><b>Julito:</b> «Puede servir para la lluvia… o para un duelo a muerte. En Bilbao conviene estar preparado para ambas cosas.»</p><p><small>OBJETO NARRATIVO · SE CONSERVARÁ PARA PRÓXIMOS EPISODIOS</small></p>');
+   setUmbrella();syncUmbrellaArt();toast('Has cogido: PARAGUAS AZUL DEUSTO');syncInventory();
+   modal('<small>OBJETO CONSEGUIDO</small><h2>Paraguas azul Deusto</h2><p>Un paraguas largo, clásico, azul oscuro, con mango curvo de madera. Parece llevar media vida junto a la recepción.</p><p><b>Julito:</b> «Puede servir para la lluvia… o para un duelo a muerte. En Bilbao conviene estar preparado para ambas cosas.»</p><p><small>OBJETO NARRATIVO · SE CONSERVARÁ PARA PRÓXIMOS EPISODIOS</small></p>');
   }else if(verb==='USAR')modal('<small>PARAGÜERO</small><h2>Una decisión prudente</h2><p>Primero tendría que coger el paraguas. Lanzarme a un duelo con el paragüero entero sería excesivo incluso para mi primer día.</p>');
-  else modal('<small>PARAGÜERO</small><h2>Un paraguas negro</h2><p>Parece resistente. <b>Julito:</b> «Puede servir para la lluvia… o para un duelo a muerte. Lo importante es no confundir el orden.»</p>');
+  else modal('<small>PARAGÜERO</small><h2>Paraguas azul Deusto</h2><p>Un paragüero clásico de latón con un paraguas largo azul oscuro. <b>Julito:</b> «Puede servir para la lluvia… o para un duelo a muerte. Lo importante es no confundir el orden.»</p>');
  });
- layer.append(b);if(hasUmbrella())prop.classList.add('empty');
+ layer.append(b);
 }
 function syncInventory(){
  const owned=hasUmbrella(),native=$('items'),grid=$('inventory-grid');if(!native)return;
  const total=native.children.length+(owned?1:0);if($('count'))$('count').textContent=String(total).padStart(2,'0');if($('inventory-total'))$('inventory-total').textContent=String(total).padStart(2,'0');
  if(!owned||!grid||grid.querySelector('[data-polish-item="umbrella"]'))return;
- const b=document.createElement('button');b.type='button';b.dataset.polishItem='umbrella';b.setAttribute('role','listitem');b.setAttribute('aria-label','paraguas');b.innerHTML='<span class="symbol umbrella-symbol">☂</span><span>paraguas</span><small>OBJETO NARRATIVO</small>';
- b.addEventListener('click',()=>modal('<small>INVENTARIO</small><h2>Paraguas</h2><p>Negro, largo y bastante serio para haber acabado en una aventura gráfica.</p><p>Puede ser útil más adelante. O para un duelo a muerte, si el reglamento no dice nada al respecto.</p>'));
+ const b=document.createElement('button');b.type='button';b.dataset.polishItem='umbrella';b.setAttribute('role','listitem');b.setAttribute('aria-label','paraguas azul Deusto');b.innerHTML='<img class="inventory-umbrella" src="assets/umbrella-stand-deusto-v1.png" alt=""><span>paraguas azul Deusto</span><small>OBJETO NARRATIVO</small>';
+ b.addEventListener('click',()=>modal('<small>INVENTARIO</small><h2>Paraguas azul Deusto</h2><p>Largo, azul oscuro, mango de madera y aspecto suficientemente solemne como para pertenecer al Colegio.</p><p>Puede ser útil más adelante. O para un duelo a muerte, si el reglamento no dice nada al respecto.</p>'));
  grid.append(b);
 }
 
@@ -82,7 +82,7 @@ function bark(){
 }
 function wirePrim(){const p=$('hotspot-prim');if(!p||p.dataset.barkWired)return;p.dataset.barkWired='1';p.addEventListener('click',()=>{if($('sound')?.getAttribute('aria-pressed')!=='false')bark();},{capture:true});}
 
-function refresh(){updateProgressHud();ensureUmbrella();wirePrim();syncInventory();}
+function refresh(){updateProgressHud();ensureUmbrella();wirePrim();syncUmbrellaArt();syncInventory();}
 let refreshTimer=null;
 function scheduleRefresh(){clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,60);}
 window.addEventListener('storage',scheduleRefresh);
