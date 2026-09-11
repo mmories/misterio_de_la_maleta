@@ -83,26 +83,31 @@ assert.ok(distance(arrivalPose(.98),arrivalPose(1))<distance(arrivalPose(.9),arr
 assert.ok(arrivalPose(.45).y>620,'Passat stays in the lower road lane before pulling in');
 console.log('PASS: road approach, fixed stop and gentle final braking.');
 
-// Intro regression. Once the family Passat has driven away, Julito must use the
-// authored asphalt corridor between the end of the foreground balustrade and
-// the parked red car. We test interpolated positions, not just waypoints, so a
-// future diagonal shortcut cannot silently cross either obstacle.
+// Exterior cut-scene regression. Julito must clear the temporary family Passat,
+// go below the permanent parked cars, turn upward beyond the white car and then
+// cross the pavement towards the entrance. Rectangles are deliberately padded.
+const blockedExterior=[
+ {name:'family Passat',x1:292,y1:410,x2:500,y2:562},
+ {name:'red parked car',x1:493,y1:462,x2:632,y2:548},
+ {name:'white parked car',x1:625,y1:482,x2:772,y2:565}
+];
+const inRect=(p,r)=>p[0]>r.x1&&p[0]<r.x2&&p[1]>r.y1&&p[1]<r.y2;
 assert.deepEqual(EXTERIOR_INTRO_ROUTE.at(-1),[503,423],'Intro route ends at the CMD door');
-for(const [x,y] of EXTERIOR_INTRO_ROUTE){
- assert.ok(!(x>=485&&x<=650&&y>=455&&y<=555),`Waypoint ${x},${y} must stay outside the red car`);
- assert.ok(!(x<370&&y>525),`Waypoint ${x},${y} must stay clear of the foreground balustrade`);
+for(const point of EXTERIOR_INTRO_ROUTE){
+ for(const rect of blockedExterior)assert.equal(inRect(point,rect),false,`${rect.name} clear at ${point}`);
+ if(point[1]>545)assert.ok(point[0]>=370,'Foreground balustrade clear');
 }
 for(const hz of [30,60,144]){
- const player={x:375,y:566,dir:0},path=EXTERIOR_INTRO_ROUTE.map(point=>[...point]);
+ // Feed the legacy route deliberately. advanceWalk must replace it before the
+ // first movement tick so stale game.js coordinates cannot reintroduce overlap.
+ const player={x:375,y:566,dir:0},path=[[275,566],[275,460],[438,452],[480,438],[503,423]];
  let energy=0,gait=0;
- for(let i=0;i<hz*20&&path.length;i++){
+ for(let i=0;i<hz*30&&path.length;i++){
   const result=advanceWalk(player,path,energy,gait,135,1/hz,'exterior');energy=result.energy;gait=result.gait;
-  const inRedCar=player.x>=485&&player.x<=650&&player.y>=455&&player.y<=555;
-  const inFence=player.x<370&&player.y>525;
-  assert.equal(inRedCar,false,'Julito must never cross the parked red car');
-  assert.equal(inFence,false,'Julito must never cross the foreground balustrade');
+  for(const rect of blockedExterior)assert.equal(inRect([player.x,player.y],rect),false,`Julito must not cross ${rect.name}`);
+  if(player.y>545)assert.ok(player.x>=370,'Julito must stay clear of the foreground balustrade');
  }
  assert.equal(path.length,0,'Exterior intro route reaches the CMD entrance');
  assert.ok(Math.abs(player.x-503)<.001&&Math.abs(player.y-423)<.001,'Exterior intro finishes at the door');
 }
-console.log('PASS: exterior intro avoids the red car and foreground balustrade at 30/60/144 Hz.');
+console.log('PASS: exterior intro avoids family Passat, red car, white car and foreground balustrade at 30/60/144 Hz.');
