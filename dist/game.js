@@ -51,7 +51,7 @@ function setScene(s){scene=s;$('hotspots').hidden=s!=='lobby';$('ask-hint').hidd
 function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,2600);}
 function showTransition(t){$('transition-text').innerHTML=t;$('transition').hidden=false;}
 function hideTransition(){$('transition').hidden=true;}
-function showObjective(){clearTimeout(objectiveTimer);$('objective').hidden=false;objectiveTimer=setTimeout(()=>{$('objective').hidden=true;},6200);}
+function showObjective(){clearTimeout(objectiveTimer);$('objective').hidden=false;objectiveTimer=setTimeout(()=>{$('objective').hidden=true;},14000);}
 function setSentence(){if(scene!=='lobby')return;const obj=hover?HOTSPOTS.find(h=>h.id===hover)?.name:'';$('sentence').textContent=selected?`${verb} ${itemName(selected)}${obj?' CON '+obj.toUpperCase():''}`:`${verb}${obj?' '+obj.toUpperCase():''}`;}
 function itemName(id){return {bag:'maleta marrón',key:'llave 310',masterKey:'llave maestra',marca:'Marca',correo:'El Correo',mundo:'El Mundo',abc:'ABC',comerciaNote:'invitación de La Comercial',tobacco:'paquete de tabaco',empiLetter:'carta de Empi',rulesBook:'reglamento de convivencia'}[id]||id;}
 const remember=(list,id)=>{if(!list.includes(id))list.push(id);};
@@ -317,7 +317,7 @@ let left=w,right=-1,top=h,bottom=-1;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d
 async function intro(){
  const e=++epoch;busy=true;player.visible=false;player.pose=null;path=[];carParked=false;cancelIntroMotion();car={...arrivalPose(0),door:0};introStage='arrival';state=newState();refreshInventory();$('title').hidden=true;$('skip').hidden=false;$('sentence').textContent='Bilbao. Octubre de 1994.';audio.setTheme('exterior');setScene('exterior');$('transition').classList.toggle('intro-slate',true);showTransition('BILBAO<small>Octubre de 1994</small>');
  try{
-  await sleep(1000);assertEpoch(e);hideTransition();audio.effect('engine');
+  await sleep(3500);assertEpoch(e);hideTransition();audio.effect('engine');
   await animateIntro(4.4,t=>Object.assign(car,arrivalPose(t)),e);
   carParked=true;introStage='parking';
   const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -339,7 +339,7 @@ async function intro(){
   introStage='entering';
   await animateIntro(.7,t=>{player.y=423-10*t;entryAlpha=1-t;},e);player.visible=false;
   introStage='closing-cmd';await animateIntro(.45,t=>cmdDoor=1-t,e);audio.effect('door');
-  showTransition('COLEGIO MAYOR DEUSTO');await sleep(700);assertEpoch(e);enterLobby();const lobbyEpoch=epoch;busy=true;await walk([300,498]);assertEpoch(lobbyEpoch);busy=false;
+  showTransition('COLEGIO MAYOR DEUSTO');await sleep(3000);assertEpoch(e);enterLobby();const lobbyEpoch=epoch;busy=true;await walk([300,498]);assertEpoch(lobbyEpoch);busy=false;
  }catch(err){if(err.message!=='cancelled')throw err;}
 }
 function enterLobby(){cancelIntroMotion();$('transition').classList.toggle('intro-slate',false);activeInteraction=null;const firstVisit=!state.introCompleted;epoch++;cancelSpeech();if(moveResolve)moveResolve(false);moveResolve=null;path=[];moveEnergy=0;gait=0;carParked=false;player={x:229,y:551,dir:1,visible:true,pose:null};$('title').hidden=true;$('skip').hidden=true;hideTransition();setScene('lobby');state.introCompleted=true;busy=false;audio.setTheme('lobby');$('hint').textContent='Elige un verbo y un objeto. Doble clic para caminar más deprisa.';setSentence();refreshInventory();refreshSceneObjects();updateMissionMeter();if(firstVisit)showObjective();checkpoint();requestAnimationFrame(fitToViewport);}

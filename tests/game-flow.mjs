@@ -10,6 +10,9 @@ let nicknameAnswer=null;let timer=0;const timers=new Map();const memory=new Map(
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
 vm.runInContext(src+`\nthis.testGame={choicesVisible:()=>!$('choices').hidden,intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction,introStage,car:{...car},entryAlpha,cmdDoor}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
+// Record real requested delays even though this harness fast-forwards timers.
+const readingDelays=[],schedule=context.setTimeout;
+context.setTimeout=(fn,ms)=>{readingDelays.push(ms);return schedule(fn,ms);};
 vm.runInContext("testGame.introDetails=()=>({introShot,speechVisible:!$('speech').hidden,door:car.door,y:player.y,visible:player.visible})",context);
 async function run(action){let finished=false,error;Promise.resolve().then(action).then(()=>finished=true,e=>{error=e;finished=true;});for(let i=0;i<1500&&!finished;i++){game.tick(t+=100);game.next();game.closeCard();const nickname=game.getChoices().find(b=>b.textContent==='TOPO');if(nickname)nickname.onclick();const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();await Promise.resolve();await Promise.resolve();}if(error)throw error;assert.ok(finished,'Action must complete');}
 const h=id=>data.HOTSPOTS.find(x=>x.id===id);
@@ -168,6 +171,8 @@ for(const stage of introStages){
  assert.equal(snap.introStage,null);assert.equal(snap.entryAlpha,1);assert.equal(snap.cmdDoor,0);assert.equal(game.isBusy(),false);
 }
 console.log('PASS: dialogue only after exit, full car/CMD sequence, skipping all eleven stages.');
+for(const duration of [3500,3000,14000])assert.ok(readingDelays.includes(duration),`Intro must provide ${duration} ms of reading time`);
+console.log('PASS: Bilbao 3.5 s, Deusto 3 s and mission explanation 14 s.');
 
 // Pedro's topic menu must return after every answer, including repeated topics.
 game.begin();game.getState().talkedToPedro=true;game.getState().hasKey310=true;
