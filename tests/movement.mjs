@@ -82,3 +82,22 @@ const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 assert.ok(distance(arrivalPose(.98),arrivalPose(1))<distance(arrivalPose(.9),arrivalPose(.92))*.1);
 assert.ok(arrivalPose(.45).y>620,'Passat stays in the lower road lane before pulling in');
 console.log('PASS: road approach, fixed stop and gentle final braking.');
+
+// Intro regression: the authored route supplied by game.js used to cut through
+// both the parked Passat and the foreground fence. animation.js must rewrite it
+// into a staged route: first towards camera, then across the bumper, then up the
+// clear corridor on the right side of the car.
+for(const hz of [30,60,144]){
+ const player={x:375,y:566,dir:0},path=[[275,566],[275,460],[438,452],[480,438],[503,423]];
+ let energy=0,gait=0,clearedCar=false;
+ for(let i=0;i<hz*20&&path.length;i++){
+  const result=advanceWalk(player,path,energy,gait,135,1/hz,'exterior');energy=result.energy;gait=result.gait;
+  const insideCar=player.x>292&&player.x<506&&player.y>410&&player.y<570;
+  if(!insideCar)clearedCar=true;
+  if(clearedCar)assert.equal(insideCar,false,'Julito must never re-enter the parked Passat after clearing it');
+  if(player.y>520)assert.ok(player.x>=370,'Julito must stay to the right of the foreground fence during the intro');
+ }
+ assert.equal(path.length,0,'Exterior intro route reaches the CMD entrance');
+ assert.ok(Math.abs(player.x-503)<.001&&Math.abs(player.y-423)<.001,'Exterior intro finishes at the door');
+}
+console.log('PASS: exterior intro clears the Passat, avoids the foreground fence and reaches the entrance at 30/60/144 Hz.');
