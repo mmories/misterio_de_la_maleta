@@ -11,18 +11,21 @@ export function arrivalPose(progress){
   y:800*v*v*v+3*790*v*v*u+3*590*v*u*u+548*u*u*u};
 }
 
-// Cinematic route authored directly against exterior.png. The path uses the
-// open strip of asphalt between the foreground balustrade and the parked red
-// car, then turns towards the CMD entrance. It deliberately stays left of the
-// red car until Julito has passed its front corner.
+// Cinematic route authored directly against exterior.png. Julito first clears
+// the family Passat in the foreground, walks below the parked cars, turns up
+// to the right of the white car and only then crosses the pavement towards the
+// entrance. The longer arc is intentional: no sprite ever cuts through a car.
 export const EXTERIOR_INTRO_ROUTE=[
- [405,555],
- [430,535],
- [450,510],
- [462,486],
- [468,462],
- [478,445],
- [491,432],
+ [420,580],
+ [780,580],
+ [805,555],
+ [805,505],
+ [795,475],
+ [775,455],
+ [730,445],
+ [670,438],
+ [610,432],
+ [550,428],
  [503,423]
 ];
 
