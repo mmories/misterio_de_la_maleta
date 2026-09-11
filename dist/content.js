@@ -1,10 +1,13 @@
-export const MISSION_OBJECTIVE='Conoce la recepción, averigua tu habitación y consigue lo necesario para instalarte. Si quieres entender qué pasa con la maleta, tendrás que mirar bastante más allá del mostrador.';
+export const MISSION_OBJECTIVE='Consigue lo imprescindible para instalarte y poder subir a Tercero Central. La exploración de la recepción es un reto independiente y opcional.';
 
+// MISSION mide únicamente exploración/completitud. Los objetos de progresión
+// (llave 310, tabaco, carta de Empi y reglamento) se controlan aparte y no
+// inflan el porcentaje de exploración.
 export const MISSION={
  signs:['board','comercia','rulesNotice','residentsNotice','directory','shield'],
- uses:['plant','pedro','stairs','sofa','phone','phoneBooths','prim','elevator'],
- dialogues:['welcome','key','place','rules','weather','canal','nickname','suitcase','comercia','prim','colegiala','bye'],
- objects:['bag','key','tobacco','empiLetter','rulesBook','correo','mundo','abc','marca','comerciaNote']
+ uses:['plant','pedro','stairs','phone','phoneBooths','prim'],
+ dialogues:['welcome','place','rules','weather','canal','nickname','suitcase','comercia','prim','colegiala','bye'],
+ objects:['correo','mundo','abc','marca','comerciaNote']
 };
 
 export const PAPER_INFO={
