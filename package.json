@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "node --check dist/game.js && node --check dist/audio.js && node --check dist/animation.js && node --check dist/content.js && node --check dist/data.js && node --check dist/save.js && node --check dist/hints.js && node --check dist/nickname.js && node --check dist/professional-polish.js",
-    "test": "node tests/game-flow.mjs && node tests/audio-engine.mjs && node tests/save-hints.mjs && node tests/nickname-dialog.mjs && node tests/movement.mjs",
+    "check": "node --check dist/game.js && node --check dist/audio.js && node --check dist/animation.js && node --check dist/content.js && node --check dist/data.js && node --check dist/save.js && node --check dist/hints.js && node --check dist/nickname.js && node --check dist/professional-polish.js && node --check dist/professional-fixes.js",
+    "test": "node tests/game-flow.mjs && node tests/audio-engine.mjs && node tests/save-hints.mjs && node tests/nickname-dialog.mjs && node tests/movement.mjs && node tests/progression-separation.mjs",
     "start": "vite --host 0.0.0.0"
   },
   "devDependencies": {
