@@ -86,12 +86,13 @@ function makeExteriorIntroRouteSafe(player,path,scene){
  Object.defineProperty(path,'__introSafe',{value:true,configurable:true});
 }
 
-const insideParkedPassat=([x,y])=>x>292&&x<506&&y>410&&y<570;
+const insideParkedPassat=([x,y])=>x>292&&x<500&&y>410&&y<570;
 function reentersParkedPassat(from,candidate,path,scene){
  if(scene!=='exterior'||!path.__introSafe)return false;
  // The scripted exit animation leaves Julito's feet at the lower edge of the
  // car silhouette. Let him move OUT of that volume; once clear, never allow a
- // later segment to enter it again.
+ // later segment to enter it again. The right edge is kept exact so the final
+ // entrance coordinate at x=503 remains reachable.
  return !insideParkedPassat(from)&&insideParkedPassat(candidate);
 }
 
