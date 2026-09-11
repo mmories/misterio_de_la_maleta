@@ -3,7 +3,7 @@ import {readSave,writeSave} from './save.js';
 import {nextHint} from './hints.js';
 import {VERBS,HOTSPOTS,TALK,newState,findPath,pointInPolygon} from './data.js';
 import {AudioEngine} from './audio.js';
-import {advanceWalk,arrivalPose,headingFor,headingDirection,directionRow,idleFrame,movementStyle,perspectiveScale,walkFrameIndex} from './animation.js';
+import {advanceWalk,arrivalPose,EXTERIOR_INTRO_ROUTE,headingFor,headingDirection,directionRow,idleFrame,movementStyle,perspectiveScale,walkFrameIndex} from './animation.js';
 import {singingText,MISSION,MISSION_OBJECTIVE,PAPER_INFO,MASTER_KEY_DIALOGUE} from './content.js';
 const $=id=>document.getElementById(id), canvas=$('canvas'),ctx=canvas.getContext('2d'),audio=new AudioEngine();
 let storageWarned=false;
@@ -107,8 +107,6 @@ function renderPlayer(){
  if(!f)return;
  if(!f.foot){renderFrame(f,player.x,player.y,height,player.dir===3);return;}
  const factor=height/f.bodyHeight,flip=!f.isometric&&player.dir===3;
- // Keep feet planted: breathing changes body height by less than one pixel,
- // instead of translating the whole sprite and making its shoes float.
  const pulse=!moving&&player.pose===null?Math.sin(clock*(player.talking?3.5:1.8))*.003:0;
  ctx.save();ctx.translate(Math.round(player.x),Math.round(player.y));
  if(flip)ctx.scale(-1,1);
@@ -116,7 +114,6 @@ function renderPlayer(){
  ctx.drawImage(f,Math.round(-f.foot[0]*factor),Math.round(-f.foot[1]*factor),Math.round(f.width*factor),Math.round(f.height*factor));
  ctx.restore();
 }
-// Do not crop these sheets: transparent padding contains the shared foot anchor.
 function isometricFrames(img,cols,rows){
  const out=[];
  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
@@ -137,7 +134,6 @@ function anchorJulitoFrames(list){
   }
   frame.foot=[count?sum/count:w/2,bottom];bodyHeights.push(bottom);
  }
- // Standing poses set the common scale; crouching must make Julito shorter.
  const reference=bodyHeights.slice(0,8).sort((a,b)=>a-b)[4]||1;
  for(const frame of list)frame.bodyHeight=reference;
  return list;
@@ -153,8 +149,6 @@ async function pickupMotion(floor=false){
   assertEpoch(e);
  }finally{delete player.pickupFrame;player.pose=null;}
 }
-// Restore only the silhouettes of foreground furniture from the fixed artwork.
-// The floor remains in the background and never erases Julito's shadow.
 const LOBBY_OCCLUDERS=[
  {y:328,polygon:[[459,277],[492,277],[492,326],[459,327]]},
  {y:406,polygon:[[0,311],[294,288],[294,405],[0,455]]},
@@ -182,11 +176,9 @@ function renderSenior(){
  ctx.save();ctx.fillStyle='rgba(5,8,8,.2)';ctx.beginPath();ctx.ellipse(831,389,25,3,0,0,Math.PI*2);ctx.fill();ctx.restore();
  ctx.save();ctx.translate(831,394);ctx.rotate((lean+nod)*motion*Math.PI/180);
  renderFrame(frames.collegiala,0,0,150);ctx.restore();
- // A discreet cue marks attention, without enlarging or bouncing the seated body.
  if(engaged&&path.length){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle='#e8be71';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(714,382,12,3,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
 }
 function drawAtmosphere(){
-// Tiny, deterministic pixels keep the rooms alive while preserving the deliberately crisp VGA art.
 ctx.save();
 if(scene==='title'||scene==='exterior'){
 const haze=ctx.createLinearGradient(0,40,0,390);haze.addColorStop(0,'rgba(208,226,255,.055)');haze.addColorStop(1,'rgba(255,213,151,0)');ctx.fillStyle=haze;ctx.fillRect(0,0,W,390);ctx.globalCompositeOperation='screen';
@@ -198,7 +190,6 @@ ctx.globalAlpha=.12;ctx.fillStyle='#ffe7a8';ctx.fillRect(382,382,105,1);ctx.fill
 }
 ctx.restore();
 }
-// Preserve fixed cells while removing the generator's light preview matte.
 function preparePassat(img){
  const c=document.createElement('canvas');c.width=img.width;c.height=img.height;
  const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);
@@ -215,7 +206,6 @@ function preparePassat(img){
  }
  g.putImageData(pixels,0,0);return c;
 }
-// Both car poses share a fixed cell and wheel anchor (512 × 384).
 function drawPassat(){
  ctx.drawImage(images.passat,0,0,512,384,Math.round(car.x),Math.round(car.y-136),200,150);
  if(car.door>0){
@@ -234,8 +224,6 @@ function drawExterior(){
 }
 function drawCarDoor(){
  if(!introStage||car.door<=0||!images.passat)return;
- // Project the actual closed door texture around its fixed B-pillar hinge.
- // The opaque leaf swings; there is no crossfade between two complete cars.
  const theta=car.door*Math.PI*.39,vx=70*Math.cos(theta)-65*Math.sin(theta),vy=30*Math.cos(theta)+35*Math.sin(theta);
  const a=(89*vx+270)/6500,b=(89*vy-2670)/6500,c=(9*vx-630)/6500,d=(9*vy+6230)/6500;
  ctx.save();ctx.translate(car.x,car.y-136);ctx.scale(200/512,150/384);
@@ -245,7 +233,6 @@ function drawCarDoor(){
 }
 function drawCMDEntrance(){
  if(cmdDoor<=0)return;
- // Left glass leaf, hinged to the existing jamb. Narrow it as it swings inward.
  const x=496,y=384,w=14,h=37,leafWidth=Math.max(2,w*Math.cos(cmdDoor*Math.PI*.46));
  ctx.save();ctx.fillStyle='#141b1b';ctx.fillRect(x,y,w,h);
  ctx.fillStyle='#74613d';ctx.fillRect(x+1,y+2,w-2,2);
@@ -279,9 +266,7 @@ ctx.save();
 if(scene==='exterior'&&introShot>0){const zoom=1+introShot*.45;ctx.translate(W/2,H/2);ctx.scale(zoom,zoom);ctx.translate(-(W/2-80*introShot),-(H/2+90*introShot));}
 if(images.exterior){if(scene==='lobby'||scene==='end')ctx.drawImage(receptionBackdrop(),0,0,W,H);else drawExterior();drawAtmosphere();if(scene==='title'||scene==='exterior'){ctx.fillStyle=`rgba(255,221,125,${.035+.025*Math.sin(clock*2)})`;ctx.fillRect(502,390,19,13);if(scene==='exterior')drawExteriorPlayer();}
 if(scene==='lobby'||scene==='end'){
-// Pedro is composited behind the existing desk and glazing, preserving depth.
 ctx.save();ctx.beginPath();ctx.rect(72,183,126,115);ctx.clip();const pedroIdle=pedroPose===3?Math.sin(clock*1.35):0,pedroShift=pedroPose===3?Math.sin(clock*.42)*.7:0,pedroFrame=pedroPose===3&&frames.pedroIdle?frames.pedroIdle[idleFrame(clock,8,.95)]:frames.pedro[pedroPose];renderFrame(pedroFrame,148+pedroShift,340-pedroIdle*.45,147);ctx.restore();
-
 if(elevatorOpen>0){const a=HOTSPOTS.find(h=>h.id==='elevator').rect;ctx.save();ctx.beginPath();ctx.rect(594,205,30,67);ctx.clip();ctx.fillStyle='#161818';ctx.fillRect(606-elevatorOpen*13,205,elevatorOpen*26,67);ctx.restore();ctx.fillStyle='#f3c474';ctx.fillRect(580,229,3,4);}
 drawRulesOnFloor();renderLobbyActors();drawThrownObject();}
 }ctx.restore();if(scene==='exterior')drawIntroFrame();requestAnimationFrame(draw);}
@@ -298,21 +283,7 @@ function spriteFrames(img){
  return out;
 }
 function transparentGridFrames(img,cols,rows,{cutoff=72,harden=true}={}){const out=[];for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const sx=Math.round(col*img.width/cols),ex=Math.round((col+1)*img.width/cols),sy=Math.round(row*img.height/rows),ey=Math.round((row+1)*img.height/rows),sw=ex-sx,sh=ey-sy,c=document.createElement('canvas');c.width=sw;c.height=sh;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,sx,sy,sw,sh,0,0,sw,sh);const pixels=g.getImageData(0,0,sw,sh),d=pixels.data;let l=sw,r=-1,t=sh,b=-1;for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const a=(y*sw+x)*4+3;if(d[a]<cutoff)d[a]=0;else if(harden)d[a]=d[a]<235?235:255;if(d[a]){l=Math.min(l,x);r=Math.max(r,x);t=Math.min(t,y);b=Math.max(b,y);}}g.putImageData(pixels,0,0);const pad=2,frame=document.createElement('canvas');frame.width=Math.max(1,r-l+1+pad*2);frame.height=Math.max(1,b-t+1+pad*2);if(r>=l)frame.getContext('2d').drawImage(c,l,t,r-l+1,b-t+1,pad,pad,r-l+1,b-t+1);out.push(frame);}return out;}
-function transparentSingleSprite(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);const pixels=g.getImageData(0,0,c.width,c.height),d=pixels.data,w=c.width,h=c.height,seen=new Uint8Array(w*h),queue=[];const backdrop=i=>d[i*4]>225&&d[i*4+1]>225&&d[i*4+2]>225&&Math.max(d[i*4],d[i*4+1],d[i*4+2])-Math.min(d[i*4],d[i*4+1],d[i*4+2])<24;const visit=i=>{if(i<0||i>=w*h||seen[i]||(d[i*4+3]&&!backdrop(i)))return;seen[i]=1;d[i*4+3]=0;queue.push(i);};for(let x=0;x<w;x++){visit(x);visit((h-1)*w+x);}for(let y=0;y<h;y++){visit(y*w);visit(y*w+w-1);}visit(Math.floor(h*.385)*w+Math.floor(w*.68));for(let n=0;n<queue.length;n++){const i=queue[n],x=i%w;if(x)visit(i-1);if(x<w-1)visit(i+1);if(i>=w)visit(i-w);if(i<w*(h-1))visit(i+w);}// Remove neutral matte fringes only where they touch the extracted background.
-const original=new Uint8ClampedArray(d);
-for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
- const i=y*w+x,k=i*4;if(!original[k+3])continue;
- const channels=[original[k],original[k+1],original[k+2]];
- if(Math.min(...channels)<165||Math.max(...channels)-Math.min(...channels)>26)continue;
- if(![i-1,i+1,i-w,i+w].some(n=>!original[n*4+3]))continue;
- let source=-1,nearest=Infinity;
- for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){
-  if(x+dx<0||x+dx>=w||y+dy<0||y+dy>=h)continue;
-  const n=((y+dy)*w+x+dx)*4,distance=dx*dx+dy*dy;
-  if(original[n+3]&&Math.min(original[n],original[n+1],original[n+2])<150&&distance<nearest){source=n;nearest=distance;}
- }
- if(source<0)d[k+3]=0;else{d[k]=original[source];d[k+1]=original[source+1];d[k+2]=original[source+2];}
-}
+function transparentSingleSprite(img){const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0);const pixels=g.getImageData(0,0,c.width,c.height),d=pixels.data,w=c.width,h=c.height,seen=new Uint8Array(w*h),queue=[];const backdrop=i=>d[i*4]>225&&d[i*4+1]>225&&d[i*4+2]>225&&Math.max(d[i*4],d[i*4+1],d[i*4+2])-Math.min(d[i*4],d[i*4+1],d[i*4+2])<24;const visit=i=>{if(i<0||i>=w*h||seen[i]||(d[i*4+3]&&!backdrop(i)))return;seen[i]=1;d[i*4+3]=0;queue.push(i);};for(let x=0;x<w;x++){visit(x);visit((h-1)*w+x);}for(let y=0;y<h;y++){visit(y*w);visit(y*w+w-1);}visit(Math.floor(h*.385)*w+Math.floor(w*.68));for(let n=0;n<queue.length;n++){const i=queue[n],x=i%w;if(x)visit(i-1);if(x<w-1)visit(i+1);if(i>=w)visit(i-w);if(i<w*(h-1))visit(i+w);}const original=new Uint8ClampedArray(d);for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x,k=i*4;if(!original[k+3])continue;const channels=[original[k],original[k+1],original[k+2]];if(Math.min(...channels)<165||Math.max(...channels)-Math.min(...channels)>26)continue;if(![i-1,i+1,i-w,i+w].some(n=>!original[n*4+3]))continue;let source=-1,nearest=Infinity;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){if(x+dx<0||x+dx>=w||y+dy<0||y+dy>=h)continue;const n=((y+dy)*w+x+dx)*4,distance=dx*dx+dy*dy;if(original[n+3]&&Math.min(original[n],original[n+1],original[n+2])<150&&distance<nearest){source=n;nearest=distance;}}if(source<0)d[k+3]=0;else{d[k]=original[source];d[k+1]=original[source+1];d[k+2]=original[source+2];}}
 let left=w,right=-1,top=h,bottom=-1;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}g.putImageData(pixels,0,0);const pad=3,out=document.createElement('canvas');out.width=right-left+1+pad*2;out.height=bottom-top+1+pad*2;out.getContext('2d').drawImage(c,left,top,right-left+1,bottom-top+1,pad,pad,right-left+1,bottom-top+1);return out;}
 async function intro(){
  const e=++epoch;busy=true;player.visible=false;player.pose=null;path=[];carParked=false;cancelIntroMotion();car={...arrivalPose(0),door:0};introStage='arrival';state=newState();refreshInventory();$('title').hidden=true;$('skip').hidden=false;$('sentence').textContent='Bilbao. Octubre de 1994.';audio.setTheme('exterior');setScene('exterior');$('transition').classList.toggle('intro-slate',true);showTransition('BILBAO<small>Octubre de 1994</small>');
@@ -332,8 +303,12 @@ async function intro(){
   await sleep(300);assertEpoch(e);introStage='farewell';
   await lines([['Desde el coche','¡Escribe cuando llegues!'],['Julito','Pero si ya he llegado.']],false,e);
   await lines([['Julito','Bueno… pues aquí empieza todo.'],['Julito','Mi madre ha metido ropa para cuatro años. La carrera dura cinco.']],false,e);
+  introStage='departure';audio.effect('engine');
+  const parkedX=car.x,parkedY=car.y;
+  await animateIntro(2.05,t=>{const s=t*t*(3-2*t);car.x=parkedX-560*s;car.y=parkedY-92*s;},e);
+  carParked=false;await sleep(160);assertEpoch(e);
   introStage='wide-shot';const shot=introShot;await animateIntro(.8,t=>introShot=shot*(1-t*t*(3-2*t)),e);
-  introStage='approach';await walkRoute([[275,566],[275,460],[438,452],[480,438],[503,423]]);assertEpoch(e);
+  introStage='approach';await walkRoute(EXTERIOR_INTRO_ROUTE);assertEpoch(e);
   introStage='opening-cmd';player.dir=2;audio.effect('door');
   await animateIntro(.55,t=>cmdDoor=t,e);
   introStage='entering';
@@ -413,7 +388,6 @@ async function maybeReward(){
 async function elevator(){if(!state.hasTobacco){await lines([['Julito','No puedo subir así. Me falta algo esencial para la supervivencia universitaria.'],['Julito','Necesito encontrar tabaco antes de enfrentarme a una tercera planta. Mi madre retiró el mío de la maleta en un acto que ella llama educación y yo llamo sabotaje.'],['Julito','Un hombre no vive solo de llave, maleta y puré naranja. Y yo, desde luego, no pienso averiguar cuánto dura sin tabaco.']]);return;}if(!state.hasKey310){await lines(TALK.locked);return;}if(!state.hasEmpiLetter){await lines([['Julito','Tengo la llave y provisiones, pero me falta algo.'],['Julito','Prim no deja de mirar hacia la entrada. Quizá debería conocer mejor a mi nuevo compañero.'],['Julito','Tiene pinta de encontrar cosas sin necesidad de formularios.']]);return;}if(!state.hasRulesBook){await lines([['Julito','Todavía me falta algo: conocer y llevar conmigo las normas de convivencia.'],['Julito','Pedro parece tener siempre un reglamento a mano, aunque no tiene cara de entregarlo por las buenas.']]);return;}state.calledElevator=true;checkpoint();if(missionStats().percent===100){await rewardMasterKey();if(!state.bonusSeen){await lines([['Pedro','Un momento. Te has fijado en todo. Eso a Empi también le pasaba.'],['Julito','¿Y cómo acabó?'],['Pedro','Dejó una habitación vacía y una maleta que yo habría jurado no volver a ver.'],['Pedro','Si llaman tres veces a la 310, pregunta quién es antes de abrir.'],['Julito','¿Y si llaman dos?'],['Pedro','Seré yo. Para que no fumes.']]);state.bonusSeen=true;checkpoint();}}audio.effect('elevator');for(let i=0;i<=20;i++){elevatorOpen=i/20;await sleep(35);}audio.effect('bell');await speak('Tercero Central. Con llave, tabaco, la carta de Empi y el reglamento: ahora sí puedo vivir… o investigar.');await walk([610,276]);audio.effect('case');primAlert=clock+8;await lines([['Julito','¿Ese golpe ha salido de dentro de la maleta?'],['Pedro','No la abras aquí.'],['Julito','¿Por qué?'],['Pedro','Porque aquí todavía puedo fingir que no sé nada.']]);player.visible=false;state.secondSceneCode=true;try{localStorage.setItem('maleta-segunda-escena','POTELE');}catch{}audio.setTheme('title');showTransition('TERCERO CENTRAL');await sleep(1600);setScene('end');$('transition-text').innerHTML='FIN DEL EPISODIO 0<small>Has conseguido una contraseña para la siguiente escena:</small>POTELE<small>Guárdala: podrás usarla desde ESCENAS.</small><small>'+ (state.bonusSeen?'100% · CONFIDENCIA DE PEDRO DESBLOQUEADA':'Exploración: '+missionStats().percent+'% · Vuelve para descubrir lo que falta.') +'</small><button id="return-lobby">SEGUIR EXPLORANDO</button><button id="again">VOLVER AL MENÚ</button>';$('return-lobby').onclick=()=>{state.calledElevator=false;elevatorOpen=0;enterLobby();};checkpoint();$('again').onclick=reset;$('sentence').textContent='Contraseña conseguida: POTELE';busy=false;}
 function reset(){cancelIntroMotion();if(moveResolve){moveResolve(false);moveResolve=null;}$('transition').classList.toggle('intro-slate',false);activeInteraction=null;nicknameSelection=null;epoch++;cancelSpeech();clearTimeout(objectiveTimer);state=newState();selected=null;verb='MIRAR';elevatorOpen=0;path=[];player.visible=false;$('objective').hidden=true;hideTransition();setScene('title');$('title').hidden=false;$('choices').hidden=true;$('card').hidden=true;$('sentence').textContent='Una maleta. Una llave. Un buen comienzo.';$('hint').textContent='Una aventura para jugar sin prisa.';audio.setTheme('title');busy=false;refreshContinue();refreshInventory();refreshSceneObjects();for(const b of $('verbs').children)b.classList.toggle('active',b.textContent==='MIRAR');requestAnimationFrame(fitToViewport);}
 $('canvas').onclick=async e=>{if(scene!=='lobby'||busy)return;const r=canvas.getBoundingClientRect(),to=[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H];if(pointInPolygon(to)){selected=null;refreshInventory();setSentence();await walk(to);await maybeReward();}};
-// Empty parts of the hotspot layer also allow walking.
 $('hotspots').onclick=e=>{if(e.target===$('hotspots'))$('canvas').onclick(e);};$('hotspots').ondblclick=e=>{if(scene==='lobby')speed=310;};
 $('continue-game').onclick=continueGame;
 $('ask-hint').onclick=showHint;
