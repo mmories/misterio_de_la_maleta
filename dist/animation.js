@@ -11,30 +11,24 @@ export function arrivalPose(progress){
   y:800*v*v*v+3*790*v*v*u+3*590*v*u*u+548*u*u*u};
 }
 
-// Cinematic route authored directly against exterior.png. Julito first clears
-// the family Passat in the foreground, walks below the parked cars, turns up
-// to the right of the white car and only then crosses the pavement towards the
-// entrance. The longer arc is intentional: no sprite ever cuts through a car.
+// Cinematic route authored directly against exterior.png. The family Passat has
+// already driven away at this point. Julito uses the open asphalt corridor just
+// beyond the foreground balustrade, stays left of the parked red car, and turns
+// towards the entrance only after clearing its front corner.
 export const EXTERIOR_INTRO_ROUTE=[
- [420,580],
- [780,580],
- [805,555],
- [805,505],
- [795,475],
- [775,455],
- [730,445],
- [670,438],
- [610,432],
- [550,428],
+ [405,555],
+ [430,535],
+ [450,510],
+ [462,486],
+ [468,462],
+ [478,445],
+ [491,432],
  [503,423]
 ];
 
 function authorExteriorIntroRoute(player,path,scene){
  if(scene!=='exterior'||path.__cmdIntroRoute||!path.length)return;
  const final=path[path.length-1];
- // game.js historically supplies an older set of waypoints. Keep the route
- // definition centralized here so future scene tuning cannot reintroduce a
- // collision simply by leaving stale coordinates in the cut-scene script.
  const isCMDApproach=final&&Math.abs(final[0]-503)<2&&Math.abs(final[1]-423)<2&&player.y>540;
  if(!isCMDApproach)return;
  path.splice(0,path.length,...EXTERIOR_INTRO_ROUTE.map(point=>[...point]));
@@ -43,9 +37,6 @@ function authorExteriorIntroRoute(player,path,scene){
 
 export function perspectiveScale(scene,y){
  if(scene==='exterior')return clamp(.31+(y-375)/430,.31,.54);
- // Art-directed depth calibration: the painted hall is not a uniform projection.
- // Feet at elevators / Maria / reception / entrance; heights exclude padding.
- // Monotone Hermite interpolation avoids size jumps when crossing each zone.
  const stops=[[287,82,.88],[382,166,.62],[455,198,.30],[551,220,.23]];
  if(y<=287)return clamp(82+(y-287)*.88,70,82)/154;
  if(y>=551)return clamp(220+(y-551)*.23,220,236)/154;
@@ -65,8 +56,6 @@ export function movementStyle({clock,gait,moving,direction,scale,speed}){
  return {bob:moving?lift*(.85+.3*intensity)*scale:Math.sin(clock*1.9)*.38*scale,lean:moving?(direction===2?1:direction===3?-1:0)*stride*.38*intensity:0,shadowScale:moving?1-lift*.055:1,frame:Math.floor((phase/(Math.PI*2)*8)+.5)%8};
 }
 
-// Front/back sheets contain inconsistent suitcase swaps. These cycles use only
-// frames where the case remains in the same hand; lateral motion uses all 8.
 export function walkFrameIndex(direction,frame){
  const front=[0,1,2,1,0,5,0,1],back=[8,11,12,15,12,11,8,15];
  return direction===0?front[frame%8]:direction===1?back[frame%8]:16+frame%8;
@@ -79,8 +68,6 @@ export function idleFrame(clock,count,pace=1){
 
 export function directionRow(direction){return direction===0?0:direction===1?1:2;}
 
-// Eight logical headings, with hysteresis at sector boundaries. Existing art
-// provides front/back/profile views; diagonal headings use the nearest view.
 export function headingFor(dx,dy,previous=2){
  if(Math.hypot(dx,dy)<.001)return previous;
  const angle=Math.atan2(dy/.65,dx),old=previous*Math.PI/4;
@@ -94,8 +81,6 @@ export function advanceHeading(current,target,dt){
  return current+Math.sign(delta)*Math.min(Math.abs(delta),dt*12);
 }
 
-// Consume all waypoints reached this tick: no frame-long pauses at corners.
-// Simulating small steps also keeps acceleration consistent on slow displays.
 export function advanceWalk(player,path,energy,gait,speed,dt,scene){
  authorExteriorIntroRoute(player,path,scene);
  let steps=0;
@@ -118,7 +103,6 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
    player.angle=advanceHeading(player.angle,player.heading*Math.PI/4,tick);
    player.dir=headingDirection((Math.round(player.angle/(Math.PI/4))+8)%8);
    const from=[player.x,player.y],candidate=[player.x+vx/d*amount,player.y+vy/d*amount];
-   // A second safety gate catches stale/direct routes as well as bad destinations.
    if(scene==='lobby'&&!visible(from,candidate)){
     path.length=0;return {energy:0,gait,steps,blocked:true};
    }
