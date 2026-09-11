@@ -1,4 +1,7 @@
-// Instrumental adaptation from the supplied reference: quantized vocal contour,
+// REJECTED DRAFT: automatic extraction did not preserve the recognizable melody.
+// Keep disabled until a replacement has been compared by ear against the reference.
+export const ANTHEM_ENABLED=false;
+// Previous instrumental attempt from the supplied reference: quantized vocal contour,
 // octave-normalized and arranged for a pulse lead, triangle bass and marching drums.
 // This score contains no samples or vocals from the recording.
 export const ANTHEM_BPM=116;

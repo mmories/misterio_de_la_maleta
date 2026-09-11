@@ -14,7 +14,13 @@ export const PAPER_INFO={
  marca:{image:'newspaper-marca-v2.png',name:'MARCA',title:'EL MADRID VUELVE A MIRAR A LA CANTERA',subtitle:'Un delantero de 17 años llama con fuerza a la puerta del primer equipo'}
 };
 
-export const isAnthemLine=text=>/(soy un hincha|himno del Logroñés|riojano de cepa|las riojanas)/i.test(text);
+export const isAnthemLine=text=>/(soy un hincha|riojano de cepa|las riojanas)/i.test(text);
+export function singingText(who,text){
+ if(who!=='Julito'||!isAnthemLine(text)||/[♪♫]/.test(text))return text;
+ // Keep the spoken aside after a quoted verse outside the musical marks.
+ if(text.includes('«')&&text.includes('»'))return text.replace(/«([^»]+)»/g,'♪ «$1» ♪');
+ return `♪ ${text} ♪`;
+}
 
 export const MASTER_KEY_DIALOGUE=[
  ['Pedro','[MOTE], he visto gente tardar cuatro años en enterarse de menos cosas que tú en una tarde.'],

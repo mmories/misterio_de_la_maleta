@@ -37,7 +37,13 @@ assert.ok([...Array(32)].every((_,i)=>{const f=animation.movementStyle({clock:0,
 assert.ok([...Array(4)].every((_,dir)=>[...Array(8)].every((__,frame)=>{const index=animation.walkFrameIndex(dir,frame);return index>=0&&index<24;})),'Every directional walk cycle must use a valid clean frame');
 assert.ok(!src.includes(']],true,e)'), 'Intro dialogue must wait for CONTINUAR instead of advancing automatically');
 assert.equal(content.isAnthemLine('Soy un hincha del equipo, el Logroñés'),true);
-assert.ok(game.anthemCount()>0,'Logroñés motif must be triggered by dialogue');
+assert.equal(game.anthemCount(),0,'Singing must never trigger anthem audio');
+assert.equal(content.isAnthemLine('¿Aceptan el himno del Logroñés como música latina?'),false);
+assert.equal(content.singingText('Julito','Soy un hincha'), '♪ Soy un hincha ♪');
+assert.equal(content.singingText('Pedro','Soy un hincha'), 'Soy un hincha');
+assert.equal(content.singingText('Julito','♪ Soy un hincha ♪'), '♪ Soy un hincha ♪');
+assert.equal(content.singingText('Julito','«Las riojanas». Esto sí que es convivencia.'),'♪ «Las riojanas» ♪. Esto sí que es convivencia.');
+await run(async()=>{const speech=game.say('Julito','Soy un hincha');assert.equal(game.getLine(),'♪ Soy un hincha ♪');game.next();await speech;});
 console.log('PASS: '+count+' verb/hotspot combinations; '+data.HOTSPOTS.length**2+' navigation pairs; independent inventory; key, tobacco, Empi letter and rules book elevator gates; mission tracking; paper pickup, duplicate pickup and return; Prim combination; ending.');
 // Resume the actual game after a completed episode, then finish optional exploration.
 const completed=structuredClone(game.getState());

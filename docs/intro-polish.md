@@ -1,5 +1,14 @@
 # Intro and collision polish
 
+## Anthem status: withdrawn
+
+Mario rejected the instrumental adaptation because its melody was not recognizable.
+`ANTHEM_ENABLED` is false and the audition MP3 has been removed. Singing dialogue
+continues with the normal background score. The original recording is not restored.
+The old note data below is retained only as a rejected draft, not a transcription.
+A replacement needs a verified melody and listening comparison, not merely passing
+audio-scheduler tests. Earlier descriptions of the audition below are historical.
+
 The Passat travels from the lower-right offscreen road to the upper-left stop,
 using a rear three-quarter view. Julito exits the rear side passenger door,
 walks around the nose, reaches the steps and waits for the CMD glass door to open.

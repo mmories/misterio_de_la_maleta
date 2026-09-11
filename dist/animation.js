@@ -11,11 +11,16 @@ export function arrivalPose(progress){
 
 export function perspectiveScale(scene,y){
  if(scene==='exterior')return clamp(.31+(y-375)/430,.31,.54);
- // Visual calibration for this fixed lobby: 72 px at elevator (y=287),
- // 190 px at entry (y=551). Continue smoothly through the lower floor.
- // A linear screen-Y model approximates a level floor under perspective.
- const height=72+(y-287)*(190-72)/(551-287);
- return clamp(height,64,216)/154;
+ // Art-directed depth calibration: the painted hall is not a uniform projection.
+ // Feet at elevators / Maria / reception / entrance; heights exclude padding.
+ // Monotone Hermite interpolation avoids size jumps when crossing each zone.
+ const stops=[[287,82,.88],[382,166,.62],[455,198,.30],[551,220,.23]];
+ if(y<=287)return clamp(82+(y-287)*.88,70,82)/154;
+ if(y>=551)return clamp(220+(y-551)*.23,220,236)/154;
+ const i=stops.findIndex((p,j)=>j<stops.length-1&&y<stops[j+1][0]);
+ const [a,ha,ma]=stops[i],[b,hb,mb]=stops[i+1],span=b-a,t=(y-a)/span;
+ const height=(2*t**3-3*t*t+1)*ha+(t**3-2*t*t+t)*span*ma+(-2*t**3+3*t*t)*hb+(t**3-t*t)*span*mb;
+ return height/154;
 }
 
 export function approachSpeed(current,target,dt){

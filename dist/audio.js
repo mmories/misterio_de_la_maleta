@@ -1,4 +1,4 @@
-import {ANTHEM_BPM,ANTHEM_NOTES,ANTHEM_DURATION} from './anthem.js';
+import {ANTHEM_ENABLED,ANTHEM_BPM,ANTHEM_NOTES,ANTHEM_DURATION} from './anthem.js';
 // Procedural VGA score, including a sample-free instrumental anthem adaptation.
 const THEMES={
  title:{bpm:94,transpose:0,wave:'triangle',progression:[45,41,48,43,45,50,41,43],melody:[69,72,76,72,71,67,64,67,69,74,77,74,72,69,67,64,76,74,72,69,71,72,74,67,72,71,69,65,68,71,69,0]},
@@ -68,6 +68,7 @@ export class AudioEngine{
   }
  }
  playLogrones(){
+  if(!ANTHEM_ENABLED)return;
   if(!this.ctx||!this.music||this.ctx.currentTime<this.anthemUntil)return;
   const t=this.ctx.currentTime+.04,beat=60/ANTHEM_BPM;
   this.stopVoices();let cursor=t;

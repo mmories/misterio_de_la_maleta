@@ -6,6 +6,7 @@ const score=new AudioEngine(),events=[];score.ctx={currentTime:0};score.musicBus
 score.tone=(note,time,duration,options)=>events.push({note,time,duration,...options});
 score.noise=(time,duration,options)=>events.push({noise:true,time,duration,...options});
 score.playLogrones();
+if(!events.length)throw new Error('Anthem withdrawn: no verified replacement score is enabled.');
 const rate=22050,data=new Float64Array(Math.ceil((score.anthemUntil+.2)*rate));let seed=1994;
 for(const event of events){
  const start=Math.round(event.time*rate),length=Math.ceil(event.duration*rate);

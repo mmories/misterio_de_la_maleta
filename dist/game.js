@@ -4,7 +4,7 @@ import {nextHint} from './hints.js';
 import {VERBS,HOTSPOTS,TALK,newState,findPath,pointInPolygon} from './data.js';
 import {AudioEngine} from './audio.js';
 import {advanceWalk,arrivalPose,headingFor,headingDirection,directionRow,idleFrame,movementStyle,perspectiveScale,walkFrameIndex} from './animation.js';
-import {isAnthemLine,MISSION,MISSION_OBJECTIVE,PAPER_INFO,MASTER_KEY_DIALOGUE} from './content.js';
+import {singingText,MISSION,MISSION_OBJECTIVE,PAPER_INFO,MASTER_KEY_DIALOGUE} from './content.js';
 const $=id=>document.getElementById(id), canvas=$('canvas'),ctx=canvas.getContext('2d'),audio=new AudioEngine();
 let storageWarned=false;
 function checkpoint(){
@@ -71,7 +71,7 @@ function cancelSpeech(){activeSpeaker=null;clearInterval(typing);clearTimeout(sp
 function nextSpeech(){if(!speechResolve)return;if(typed<fullLine.length){typed=fullLine.length;$('line').textContent=fullLine;clearInterval(typing);typing=null;return;}cancelSpeech();}
 function speakerName(who){if(who==='Colegiala mayor'&&state.talkedToSenior)return 'María';return who==='Julito'&&state.nickname?state.nickname:who;}
 function dialogueText(text){return text.replaceAll('[MOTE]',state.nickname||'Julito');}
-function say(who,text,auto=false){text=dialogueText(text);cancelSpeech();activeSpeaker=who;$('choices').hidden=true;$('speaker').textContent=speakerName(who).toUpperCase();fullLine=text;typed=0;$('line').textContent='';$('speech').hidden=false;pedroPose=who==='Pedro'?1:3;if(who==='Julito'&&scene==='lobby')player.talking=true;if(who==='Julito'&&isAnthemLine(text))audio.playLogrones?.();return new Promise(resolve=>{speechResolve=()=>{player.pose=null;player.talking=false;pedroPose=3;resolve();};typing=setInterval(()=>{typed=Math.min(fullLine.length,typed+2);$('line').textContent=fullLine.slice(0,typed);if(typed===fullLine.length){clearInterval(typing);typing=null;}},24);if(auto)speechTimer=setTimeout(cancelSpeech,Math.max(2800,text.length*52));});}
+function say(who,text,auto=false){text=singingText(who,dialogueText(text));cancelSpeech();activeSpeaker=who;$('choices').hidden=true;$('speaker').textContent=speakerName(who).toUpperCase();fullLine=text;typed=0;$('line').textContent='';$('speech').hidden=false;pedroPose=who==='Pedro'?1:3;if(who==='Julito'&&scene==='lobby')player.talking=true;return new Promise(resolve=>{speechResolve=()=>{player.pose=null;player.talking=false;pedroPose=3;resolve();};typing=setInterval(()=>{typed=Math.min(fullLine.length,typed+2);$('line').textContent=fullLine.slice(0,typed);if(typed===fullLine.length){clearInterval(typing);typing=null;}},24);if(auto)speechTimer=setTimeout(cancelSpeech,Math.max(2800,text.length*52));});}
 $('next').onclick=e=>{e.stopPropagation();nextSpeech();};$('speech').onclick=nextSpeech;
 async function lines(list,auto=false,e=epoch){for(const [who,text] of list){assertEpoch(e);await say(who,text,auto);assertEpoch(e);}}
 async function speak(text,who='Julito'){await say(who,text);}

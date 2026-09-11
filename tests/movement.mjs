@@ -40,11 +40,15 @@ advanceWalk(p,route,135,0,135,1/60,'lobby');assert.ok(p.x>450.1);
 for(const h of HOTSPOTS)assert.ok(findPath([229,551],h.at),h.id);
 console.log(`PASS: ${destinations} floor destinations, collision-safe segments, 30/144 Hz pacing, gait, stopping, corners and fast walking.`);
 
-assert.equal(perspectiveScale('lobby',287)*154,72);
-assert.equal(perspectiveScale('lobby',551)*154,190);
+for(const [y,height] of [[287,82],[382,166],[455,198],[551,220]])assert.ok(Math.abs(perspectiveScale('lobby',y)*154-height)<1e-9);
 for(let y=276;y<=599;y++){
  const change=154*(perspectiveScale('lobby',y)-perspectiveScale('lobby',y-1));
- assert.ok(change>0&&change<.5,'Scale must grow continuously across the full lobby');
+ assert.ok(change>0&&change<1.1,'Scale must grow continuously across the full lobby');
+}
+for(const y of [287,382,455,551]){
+ const left=(perspectiveScale('lobby',y)-perspectiveScale('lobby',y-.01))/.01;
+ const right=(perspectiveScale('lobby',y+.01)-perspectiveScale('lobby',y))/.01;
+ assert.ok(Math.abs(left-right)<.00001,'No growth-rate jump at a calibration point');
 }
 console.log('PASS: perspective reference heights and smooth growth through y=599.');
 
