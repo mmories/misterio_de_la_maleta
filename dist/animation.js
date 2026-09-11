@@ -62,29 +62,34 @@ export function advanceHeading(current,target,dt){
  return current+Math.sign(delta)*Math.min(Math.abs(delta),dt*12);
 }
 
-// The exterior artwork has a foreground stone fence. The old scripted route
-// climbed vertically through it. When the intro approaches the CMD entrance,
-// redirect the route along the pavement to the opening before heading inward.
-function makeExteriorFenceRouteSafe(player,path,scene){
- if(scene!=='exterior'||path.__fenceSafe||!path.length)return;
+// Intro blocking, authored like a classic point-and-click cut-scene rather than
+// free navigation. The Passat occupies roughly x=300..500 / y=412..562 at rest
+// and the foreground stone fence closes the lower-left approach. Julito first
+// clears the rear bumper along the road, then uses the narrow corridor at the
+// right-hand side of the car before turning towards the CMD entrance.
+// Every waypoint stays outside the car rectangle with a small visual margin.
+function makeExteriorIntroRouteSafe(player,path,scene){
+ if(scene!=='exterior'||path.__introSafe||!path.length)return;
  const final=path[path.length-1];
- const isIntroApproach=final&&Math.abs(final[0]-503)<2&&Math.abs(final[1]-423)<2&&player.y>520;
+ const isIntroApproach=final&&Math.abs(final[0]-503)<2&&Math.abs(final[1]-423)<2&&player.y>540;
  if(!isIntroApproach)return;
  path.splice(0,path.length,
-  [360,566], // move parallel to the foreground fence
-  [425,552], // reach the clear opening
-  [452,520],
-  [468,484],
-  [484,449],
-  [503,423]  // entrance
+  [505,574], // clear the bumper while staying below it
+  [515,566], // step outside the Passat's right edge
+  [518,548],
+  [520,520],
+  [522,490],
+  [520,462],
+  [512,440],
+  [503,423]  // CMD entrance
  );
- Object.defineProperty(path,'__fenceSafe',{value:true,configurable:true});
+ Object.defineProperty(path,'__introSafe',{value:true,configurable:true});
 }
 
 // Consume all waypoints reached this tick: no frame-long pauses at corners.
 // Simulating small steps also keeps acceleration consistent on slow displays.
 export function advanceWalk(player,path,energy,gait,speed,dt,scene){
- makeExteriorFenceRouteSafe(player,path,scene);
+ makeExteriorIntroRouteSafe(player,path,scene);
  let steps=0;
  for(let time=Math.min(.1,Math.max(0,dt));time>1e-8&&path.length;){
   const tick=Math.min(time,1/120);time-=tick;
