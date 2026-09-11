@@ -11,10 +11,10 @@ export function arrivalPose(progress){
   y:800*v*v*v+3*790*v*v*u+3*590*v*u*u+548*u*u*u};
 }
 
-// Cinematic route authored against exterior.png. It is only used after the
-// family Passat has pulled away. The path stays on the road, clears the right
-// end of the foreground balustrade and turns towards the entrance before the
-// parked red car can overlap Julito's silhouette.
+// Cinematic route authored directly against exterior.png. The path uses the
+// open strip of asphalt between the foreground balustrade and the parked red
+// car, then turns towards the CMD entrance. It deliberately stays left of the
+// red car until Julito has passed its front corner.
 export const EXTERIOR_INTRO_ROUTE=[
  [405,555],
  [430,535],
@@ -25,6 +25,18 @@ export const EXTERIOR_INTRO_ROUTE=[
  [491,432],
  [503,423]
 ];
+
+function authorExteriorIntroRoute(player,path,scene){
+ if(scene!=='exterior'||path.__cmdIntroRoute||!path.length)return;
+ const final=path[path.length-1];
+ // game.js historically supplies an older set of waypoints. Keep the route
+ // definition centralized here so future scene tuning cannot reintroduce a
+ // collision simply by leaving stale coordinates in the cut-scene script.
+ const isCMDApproach=final&&Math.abs(final[0]-503)<2&&Math.abs(final[1]-423)<2&&player.y>540;
+ if(!isCMDApproach)return;
+ path.splice(0,path.length,...EXTERIOR_INTRO_ROUTE.map(point=>[...point]));
+ Object.defineProperty(path,'__cmdIntroRoute',{value:true,configurable:true});
+}
 
 export function perspectiveScale(scene,y){
  if(scene==='exterior')return clamp(.31+(y-375)/430,.31,.54);
@@ -82,6 +94,7 @@ export function advanceHeading(current,target,dt){
 // Consume all waypoints reached this tick: no frame-long pauses at corners.
 // Simulating small steps also keeps acceleration consistent on slow displays.
 export function advanceWalk(player,path,energy,gait,speed,dt,scene){
+ authorExteriorIntroRoute(player,path,scene);
  let steps=0;
  for(let time=Math.min(.1,Math.max(0,dt));time>1e-8&&path.length;){
   const tick=Math.min(time,1/120);time-=tick;
