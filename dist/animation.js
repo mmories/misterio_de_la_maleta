@@ -86,12 +86,13 @@ function makeExteriorIntroRouteSafe(player,path,scene){
  Object.defineProperty(path,'__introSafe',{value:true,configurable:true});
 }
 
-function hitsParkedPassat(candidate,path,scene){
+const insideParkedPassat=([x,y])=>x>292&&x<506&&y>410&&y<570;
+function reentersParkedPassat(from,candidate,path,scene){
  if(scene!=='exterior'||!path.__introSafe)return false;
- const [x,y]=candidate;
- // Foot-position exclusion rectangle. The 6px margin prevents the lower body
- // and suitcase from visually slicing the bumper even when the feet are clear.
- return x>292&&x<506&&y>410&&y<570;
+ // The scripted exit animation leaves Julito's feet at the lower edge of the
+ // car silhouette. Let him move OUT of that volume; once clear, never allow a
+ // later segment to enter it again.
+ return !insideParkedPassat(from)&&insideParkedPassat(candidate);
 }
 
 // Consume all waypoints reached this tick: no frame-long pauses at corners.
@@ -117,9 +118,9 @@ export function advanceWalk(player,path,energy,gait,speed,dt,scene){
    player.heading=headingFor(vx,vy,player.heading??2);
    player.angle=advanceHeading(player.angle,player.heading*Math.PI/4,tick);
    player.dir=headingDirection((Math.round(player.angle/(Math.PI/4))+8)%8);
-   const candidate=[player.x+vx/d*amount,player.y+vy/d*amount];
+   const from=[player.x,player.y],candidate=[player.x+vx/d*amount,player.y+vy/d*amount];
    // Safety gates catch stale/direct routes as well as bad destinations.
-   if((scene==='lobby'&&!visible([player.x,player.y],candidate))||hitsParkedPassat(candidate,path,scene)){
+   if((scene==='lobby'&&!visible(from,candidate))||reentersParkedPassat(from,candidate,path,scene)){
     path.length=0;return {energy:0,gait,steps,blocked:true};
    }
    [player.x,player.y]=candidate;
