@@ -54,7 +54,7 @@ function showTransition(t){$('transition-text').innerHTML=t;$('transition').hidd
 function hideTransition(){$('transition').hidden=true;}
 function showObjective(){clearTimeout(objectiveTimer);$('objective').hidden=false;objectiveTimer=setTimeout(()=>{$('objective').hidden=true;},14000);}
 function setSentence(){if(scene!=='lobby')return;const obj=hover?HOTSPOTS.find(h=>h.id===hover)?.name:'';const text=selected?`${verb} ${itemName(selected)}${obj?' CON '+obj.toUpperCase():''}`:`${verb}${obj?' '+obj.toUpperCase():''}`;$('sentence').textContent=text;const cue=$('action-cue');if(obj){cue.textContent=text;cue.hidden=false;}else cue.hidden=true;}
-function itemName(id){return {bag:'maleta marrón',key:'llave 310',masterKey:'llave maestra',umbrella:'paraguas negro',marca:'Marca',correo:'El Correo',mundo:'El Mundo',abc:'ABC',comerciaNote:'invitación de La Comercial',tobacco:'paquete de tabaco',empiLetter:'carta de Empi',rulesBook:'reglamento de convivencia'}[id]||id;}
+function itemName(id){return {bag:'maleta marrón',key:'llave 310',masterKey:'llave maestra',umbrella:'paraguas azul Deusto',marca:'Marca',correo:'El Correo',mundo:'El Mundo',abc:'ABC',comerciaNote:'invitación de La Comercial',tobacco:'paquete de tabaco',empiLetter:'carta de Empi',rulesBook:'reglamento de convivencia'}[id]||id;}
 const remember=(list,id)=>{if(!list.includes(id))list.push(id);if(list===state.collectedItems){lastPicked=id;clearTimeout(pickTimer);pickTimer=setTimeout(()=>{lastPicked=null;refreshInventory();},1300);}};
 function missionStats(){const groups=[['Carteles',state.inspectedSigns,MISSION.signs],['Usos',state.usedTargets,MISSION.uses],['Diálogos',state.readTopics,MISSION.dialogues],['Objetos',state.collectedItems,MISSION.objects]];let done=0,total=0;const rows=groups.map(([label,got,all])=>{const n=all.filter(id=>got.includes(id)).length;done+=n;total+=all.length;return {label,done:n,total:all.length};});return {rows,done,total,percent:Math.round(done/total*100)};}
 function updateMissionMeter(){const el=$('mission-meter');el.hidden=scene!=='lobby';if(el.hidden)return;const progress=missionStats();$('mission-percent').textContent=progress.percent+'%';$('mission-fill').style.width=progress.percent+'%';el.setAttribute('aria-label',`Progreso de la misión: ${progress.percent}%`);checkpoint();}
@@ -189,7 +189,7 @@ function drawRulesOnFloor(){if(!state.rulesOnFloor||state.hasRulesBook)return;ct
 function drawMoveMarker(){if(!moveMarker||!path.length){moveMarker=null;return;}const pulse=5+Math.sin(clock*10)*1.5;ctx.save();ctx.globalAlpha=.9;ctx.strokeStyle='#f0c877';ctx.lineWidth=2;ctx.beginPath();ctx.arc(moveMarker.x,moveMarker.y-2,pulse,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff0c9';ctx.fillRect(moveMarker.x-1,moveMarker.y-3,3,3);ctx.restore();}
 function drawUmbrellaStand(){
  if(state.hasUmbrella)return;
- if(images.umbrella){const h=106,w=Math.round(images.umbrella.width/images.umbrella.height*h);ctx.drawImage(images.umbrella,724-w/2,410-h,w,h);return;}
+ if(images.umbrella){const sx=280,sy=60,sw=500,sh=1420,h=132,w=Math.round(sw/sh*h);ctx.drawImage(images.umbrella,sx,sy,sw,sh,720-w/2,425-h,w,h);return;}
  ctx.save();ctx.translate(724,402);ctx.fillStyle='rgba(4,8,8,.25)';ctx.beginPath();ctx.ellipse(0,8,19,3,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#b99153';ctx.fillStyle='#60442b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,-2);ctx.lineTo(-9,7);ctx.lineTo(9,7);ctx.lineTo(13,-2);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#191f22';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-2);ctx.lineTo(0,-56);ctx.stroke();ctx.beginPath();ctx.arc(0,-58,5,Math.PI,0);ctx.stroke();ctx.fillStyle='#263138';ctx.beginPath();ctx.moveTo(-14,-51);ctx.lineTo(0,-71);ctx.lineTo(14,-51);ctx.closePath();ctx.fill();ctx.strokeStyle='#9eb3b0';ctx.lineWidth=1;ctx.stroke();ctx.restore();
 }
 function renderSenior(){
@@ -273,11 +273,12 @@ function drawCMDEntrance(){
  ctx.fillStyle='#dec987';ctx.fillRect(Math.max(1,leafWidth-3),20,1,5);ctx.restore();
 }
 function drawExteriorPlayer(){
+ if(introStage==='exit')drawCarDoor();
  ctx.save();ctx.globalAlpha=entryAlpha;
  if(introStage==='entering'){ctx.beginPath();ctx.rect(496,383,15,43);ctx.clip();}
  renderPlayer();ctx.restore();
  if(player.y<car.y-70&&images.passat)drawPassat();
- drawCarDoor();
+ if(introStage!=='exit')drawCarDoor();
 }
 function drawIntroFrame(){
  if(scene!=='exterior')return;
@@ -301,7 +302,7 @@ if(scene==='lobby'||scene==='end'){
 ctx.save();ctx.beginPath();ctx.rect(72,183,126,115);ctx.clip();const pedroIdle=pedroPose===3?Math.sin(clock*1.35):0,pedroShift=pedroPose===3?Math.sin(clock*.42)*.7:0,pedroFrame=pedroPose===3&&frames.pedroIdle?frames.pedroIdle[idleFrame(clock,8,.95)]:frames.pedro[pedroPose];renderFrame(pedroFrame,148+pedroShift,340-pedroIdle*.45,147);ctx.restore();
 
 if(elevatorOpen>0){const a=HOTSPOTS.find(h=>h.id==='elevator').rect;ctx.save();ctx.beginPath();ctx.rect(594,205,30,67);ctx.clip();ctx.fillStyle='#161818';ctx.fillRect(606-elevatorOpen*13,205,elevatorOpen*26,67);ctx.restore();ctx.fillStyle='#f3c474';ctx.fillRect(580,229,3,4);}
-drawRulesOnFloor();drawUmbrellaStand();drawMoveMarker();renderLobbyActors();drawThrownObject();}
+drawRulesOnFloor();drawMoveMarker();renderLobbyActors();drawUmbrellaStand();drawThrownObject();}
 }ctx.restore();if(scene==='exterior')drawIntroFrame();requestAnimationFrame(draw);}
 function spriteFrames(img){
  const xs=[60,350,625,900,1215],ys=[0,313,620,926,1254],out=[];
@@ -347,13 +348,15 @@ async function intro(){
   // Stay on the pavement beside the car; the old downward arc cut across the foreground fence.
   await animateIntro(.95,t=>{player.x=390-12*t;player.y=520+10*t;player.pose=t<.35?8:null;gait=t*Math.PI*2;},e);
   audio.effect('case');player.pose=11;await sleep(450);assertEpoch(e);player.pose=null;
+  // Step fully clear of the open leaf before it starts to close.
+  await animateIntro(.55,t=>{const s=t*t*(3-2*t);player.x=378+50*s;player.y=530-20*s;gait+=t*.16;},e);
   introStage='door-closing';await animateIntro(.7,t=>car.door=1-t*t*(3-2*t),e);audio.effect('door');
   await sleep(300);assertEpoch(e);introStage='farewell';
   await lines([['Desde el coche','¡Escribe cuando llegues!'],['Julito','Pero si ya he llegado.']],false,e);
   await lines([['Julito','Bueno… pues aquí empieza todo.'],['Julito','Mi madre ha metido ropa para cuatro años. La carrera dura cinco.']],false,e);
   introStage='wide-shot';const shot=introShot;await animateIntro(.8,t=>introShot=shot*(1-t*t*(3-2*t)),e);
   // Authored exterior route: pavement only, with no segment through the fence, parked cars or shrubs.
-  introStage='approach';await walkRoute([[404,520],[452,487],[482,453],[503,423]]);assertEpoch(e);
+  introStage='approach';await walkRoute([[452,487],[482,453],[503,423]]);assertEpoch(e);
   introStage='opening-cmd';player.dir=2;audio.effect('door');
   await animateIntro(.55,t=>cmdDoor=t,e);
   introStage='entering';
@@ -404,7 +407,7 @@ if(h.id==='phoneBooths'&&['USAR','EMPUJAR'].includes(verb)){state.triedPhoneBoot
 if(h.id==='stairs'&&['USAR','SUBIR','EMPUJAR'].includes(verb)){await lines([['Julito','Podría subir por las escaleras…'],['Julito','Pero no es hora de hacer deporte. Y la maleta ya va ganando por puntos.'],['Julito','Ganar no se deja, pero subir tampoco me apetece.']]);return;}
 if(h.id==='sofa'&&verb==='USAR'){player.pose=11;if(!state.hasTobacco){await lines([['Julito','Un sofá de skay. Parece diseñado para que uno se arrepienta de sentarse.'],['Julito','Pero… ¿qué es esto entre los cojines?'],['Julito','Un paquete de Fortuna. Literalmente. Mi madre me quitó el mío de la maleta antes de salir y yo empezaba a calcular cuánto podía sobrevivir sin fumar.'],['Julito','Soy un hincha del equipo, el Logroñés… y ahora además del sofá.']]);state.hasTobacco=true;remember(state.collectedItems,'tobacco');refreshInventory();toast('Has encontrado: PAQUETE DE TABACO');}else await speak('El sofá sigue igual de incómodo. Ahora yo estoy bastante más contento.');player.pose=null;return;}
 if(h.id==='mat'&&['COGER','USAR'].includes(verb)){if(!state.hasEmpiLetter){await pickupMotion(true);player.pose=4;audio.effect('paper');await lines([['Julito','A ver qué escondes, felpudo…'],['Julito','Una carta para quien ocupe la 310. La firma un excolegial: Empi.']]);player.pose=4;await sleep(320);state.hasEmpiLetter=true;remember(state.collectedItems,'empiLetter');refreshInventory();toast('Has encontrado: CARTA DE EMPI');await showEmpiLetter();await speak('Alguien esperaba que yo encontrase esto. Empieza a gustarme bastante menos mi felpudo.');player.pose=null;}else await speak('Debajo ya no queda nada. El felpudo ha agotado su aportación al misterio.');return;}
-if(h.id==='umbrellaStand'&&verb==='COGER'){await pickupMotion();audio.effect('item');state.hasUmbrella=true;remember(state.collectedItems,'umbrella');refreshSceneObjects();refreshInventory();toast('Has cogido: PARAGUAS NEGRO');await speak('Un paraguas negro. En Bilbao no es un accesorio: es una declaración de intenciones. Me lo guardo para cuando alguien proponga un duelo con mala previsión.');player.pose=null;return;}
+if(h.id==='umbrellaStand'&&verb==='COGER'){await pickupMotion();audio.effect('item');state.hasUmbrella=true;remember(state.collectedItems,'umbrella');refreshSceneObjects();refreshInventory();toast('Has cogido: PARAGUAS AZUL DEUSTO');await speak('Un paraguas azul Deusto. En Bilbao no es un accesorio: es una declaración de intenciones. Me lo guardo para cuando alguien proponga un duelo con mala previsión.');player.pose=null;return;}
 if(h.id==='rulesBook'&&verb==='COGER'){await pickupMotion(true);player.pose=4;audio.effect('paper');await sleep(320);state.rulesOnFloor=false;state.hasRulesBook=true;remember(state.collectedItems,'rulesBook');refreshSceneObjects();refreshInventory();toast('Has cogido: REGLAMENTO DE CONVIVENCIA');await speak('Ya es mío. Si Pedro vuelve a lanzarlo, al menos podré alegar duplicidad administrativa.');player.pose=null;return;}
 if(h.id==='rulesBook'&&verb==='USAR'){await showRulesBook();await speak('Conviene leerlo: la próxima tarjeta quizá no sea de bienvenida.');return;}
 if(verb==='HABLAR CON'){if(h.id==='pedro'){await conversation();return;}if(h.id==='prim'){primAlert=clock+6;await lines([['Julito',`Hola, Prim. Yo soy ${state.nickname||'Julito'}.`],['Julito','¿Tú también acabas de llegar?'],['Pedro','Lleva más tiempo que tú. Y ya conoce las normas.']]);return;}if(h.id==='colegiala'){if(!state.talkedToSenior){const introduction=state.nickname?`Me llaman ${state.nickname}. Julito para las cartas de mi madre.`:'Sí. Me llamo Julito. Acabo de llegar.';const destination=state.roomAssigned?[['Julito','Me han asignado Tercero Central.'],['Colegiala mayor','Esos nunca van a cafetería. Tienen miedo de que alguien les pida conversación.']]:[['Julito','Todavía no sé dónde me han colocado.'],['Colegiala mayor','Entonces habla con Pedro antes de que te adjudique una maceta.']];await lines([['Colegiala mayor','Hola. ¿Eres el nuevo?'],['Julito',introduction],...destination,['Colegiala mayor','Yo soy María. Esta noche estamos intentando montar una clase de salsa. Dime una cosa importante: ¿bailas salsa?'],['Julito','¿La de tomate o la que obliga a mover las caderas?'],['Colegiala mayor','La segunda. La primera parece dominarla el comedor.'],['Julito','Mi especialidad es permanecer inmóvil con mucho ritmo.'],['Colegiala mayor','Esta noche hay clase. Podrías aprender dos pasos.'],['Julito','¿Aceptan el himno del Logroñés como música latina?'],['Colegiala mayor','Solo si consigues cantarlo sin espantar al profesor.'],['Julito','Eso reduce mucho mis posibilidades.'],['Julito','Acabo de llegar y ya veo que la calidad de las chicas del CMD está a gran altura.'],['Colegiala mayor','Gracias. La de tus cumplidos todavía está en periodo de prueba.'],['Julito','Dame un curso. La carrera dura cinco años.']]);state.talkedToSenior=true;remember(state.readTopics,'colegiala');}else await lines([['Colegiala mayor','¿Te has decidido con la salsa?'],['Julito','Estoy practicando el paso más importante: encontrar una excusa.'],['Colegiala mayor','Ese ya te sale. Ahora prueba a mover un pie.'],['Julito','Con la maleta en la mano, cualquier giro acaba en parte médico.'],['Colegiala mayor','Déjala en tu habitación y baja esta noche.'],['Julito','Con la salsa voy a necesitar más de una clase. Con las excusas, en cambio, creo que puedo convalidar créditos.'],['Colegiala mayor','Eso tampoco era una competición muy exigente.']]);return;}await speak('No contesta. Primer contacto social: mejorable.');return;}

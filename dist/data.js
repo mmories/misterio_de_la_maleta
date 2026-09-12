@@ -25,7 +25,7 @@ export const HOTSPOTS=[
 {id:'stairs',name:'escaleras',rect:[665,230,75,120],at:[683,340],look:'Las escaleras suben con una alegría que mi maleta no comparte.'},
 {id:'entry',name:'puerta de entrada',rect:[5,493,181,101],at:[229,551],look:'Por ahí he entrado. Todavía podría decir que me he equivocado de edificio.'},
 {id:'mat',name:'felpudo de entrada',rect:[185,500,245,96],at:[229,551],look:'Un felpudo enorme con el escudo del Colegio Mayor. Lleva aquí el tiempo suficiente para saber más que Pedro.'},
-{id:'umbrellaStand',name:'paragüero',rect:[700,300,48,108],at:[686,367],look:'Un paragüero de latón con un paraguas negro. En Bilbao esto debería venir incluido con la matrícula.'},
+{id:'umbrellaStand',name:'paragüero',rect:[694,284,54,142],at:[686,367],look:'Un paragüero de latón con un paraguas azul Deusto. En Bilbao esto debería venir incluido con la matrícula.'},
 {id:'rulesBook',name:'reglamento de convivencia',rect:[348,405,58,35],at:[410,448],look:'El reglamento que me ha lanzado Pedro. La pedagogía de proyectil tiene algo difícil de olvidar.'}
 ];
 export const TALK={

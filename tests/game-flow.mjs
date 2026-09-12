@@ -141,7 +141,7 @@ await run(async()=>{
   const detail=game.introDetails();
   if(detail.speechVisible){
    visibleIntroLines++;assert.equal(snap.introStage,'farewell','No dialogue during parking or exit');
-   assert.equal(detail.door,0);assert.equal(detail.y,530);assert.equal(detail.visible,true);
+   assert.equal(detail.door,0);assert.equal(detail.y,510);assert.equal(detail.visible,true);
   }
   if(snap.introStage==='arrival')arrivals.push({...snap.car});
   await new Promise(resolve=>context.setTimeout(resolve));
