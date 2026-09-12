@@ -139,9 +139,12 @@ await run(async()=>{
  while(game.sceneSnapshot().scene==='exterior'){
   const snap=game.sceneSnapshot();stages.add(snap.introStage);
   const detail=game.introDetails();
+  if(snap.introStage==='exit')assert.ok(snap.x>=425,'Julito must stay outside the car-door sweep');
+  if(snap.introStage==='door-closing')assert.ok(snap.x>=504,'The car door only closes after Julito steps clear');
+  if(snap.introStage==='entering')assert.ok(snap.cmdDoor>=.99,'Julito crosses the CMD threshold only with its door fully open');
   if(detail.speechVisible){
    visibleIntroLines++;assert.equal(snap.introStage,'farewell','No dialogue during parking or exit');
-   assert.equal(detail.door,0);assert.equal(detail.y,510);assert.equal(detail.visible,true);
+   assert.equal(detail.door,0);assert.equal(detail.y,505);assert.equal(detail.visible,true);
   }
   if(snap.introStage==='arrival')arrivals.push({...snap.car});
   await new Promise(resolve=>context.setTimeout(resolve));

@@ -178,7 +178,7 @@ function drawOccluder(polygon){
 }
 function renderPrim(){if(frames.primIdle){const near=player.visible&&Math.hypot(player.x-269,player.y-442)<145,alert=primAlert>clock||(near&&path.length>0),phase=alert?4+Math.floor(clock*4.5)%4:idleFrame(clock,4,.8),h=alert?80:68,f=frames.primIdle[phase],w=f.width/f.height*h;ctx.save();ctx.fillStyle='rgba(7,12,13,.26)';ctx.beginPath();ctx.ellipse(269,443,w*.37,3.5,0,0,Math.PI*2);ctx.fill();ctx.restore();renderFrame(f,269,443,h);}else if(images.prim){const cellW=images.prim.width/2;ctx.drawImage(images.prim,primAlert>clock?cellW:0,40,cellW,180,205,355,128,76+breath*.4);}}
 function renderLobbyActors(){
- const layers=[{y:player.y,draw:renderPlayer},{y:443,draw:renderPrim},{y:394,draw:renderSenior},...LOBBY_OCCLUDERS.map(({y,polygon})=>({y,draw:()=>drawOccluder(polygon)}))];
+ const layers=[{y:player.y,draw:renderPlayer},{y:443,draw:renderPrim},{y:394,draw:renderSenior},...(!state.hasUmbrella?[{y:545,draw:drawUmbrellaStand}]:[]),...LOBBY_OCCLUDERS.map(({y,polygon})=>({y,draw:()=>drawOccluder(polygon)}))];
  layers.sort((a,b)=>a.y-b.y);for(const layer of layers)layer.draw();
 }
 function throwProgress(){return thrownObject?Math.min(1,(clock-thrownObject.start)/thrownObject.duration):0;}
@@ -189,8 +189,8 @@ function drawRulesOnFloor(){if(!state.rulesOnFloor||state.hasRulesBook)return;ct
 function drawMoveMarker(){if(!moveMarker||!path.length){moveMarker=null;return;}const pulse=5+Math.sin(clock*10)*1.5;ctx.save();ctx.globalAlpha=.9;ctx.strokeStyle='#f0c877';ctx.lineWidth=2;ctx.beginPath();ctx.arc(moveMarker.x,moveMarker.y-2,pulse,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff0c9';ctx.fillRect(moveMarker.x-1,moveMarker.y-3,3,3);ctx.restore();}
 function drawUmbrellaStand(){
  if(state.hasUmbrella)return;
- if(images.umbrella){const sx=280,sy=60,sw=500,sh=1420,h=132,w=Math.round(sw/sh*h);ctx.drawImage(images.umbrella,sx,sy,sw,sh,720-w/2,425-h,w,h);return;}
- ctx.save();ctx.translate(724,402);ctx.fillStyle='rgba(4,8,8,.25)';ctx.beginPath();ctx.ellipse(0,8,19,3,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#b99153';ctx.fillStyle='#60442b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,-2);ctx.lineTo(-9,7);ctx.lineTo(9,7);ctx.lineTo(13,-2);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#191f22';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-2);ctx.lineTo(0,-56);ctx.stroke();ctx.beginPath();ctx.arc(0,-58,5,Math.PI,0);ctx.stroke();ctx.fillStyle='#263138';ctx.beginPath();ctx.moveTo(-14,-51);ctx.lineTo(0,-71);ctx.lineTo(14,-51);ctx.closePath();ctx.fill();ctx.strokeStyle='#9eb3b0';ctx.lineWidth=1;ctx.stroke();ctx.restore();
+ if(images.umbrella){const sx=280,sy=60,sw=500,sh=1420,h=132,w=Math.round(sw/sh*h);ctx.drawImage(images.umbrella,sx,sy,sw,sh,740-w/2,545-h,w,h);return;}
+ ctx.save();ctx.translate(740,537);ctx.fillStyle='rgba(4,8,8,.25)';ctx.beginPath();ctx.ellipse(0,8,19,3,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#b99153';ctx.fillStyle='#60442b';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-13,-2);ctx.lineTo(-9,7);ctx.lineTo(9,7);ctx.lineTo(13,-2);ctx.closePath();ctx.fill();ctx.stroke();ctx.strokeStyle='#191f22';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,-2);ctx.lineTo(0,-56);ctx.stroke();ctx.beginPath();ctx.arc(0,-58,5,Math.PI,0);ctx.stroke();ctx.fillStyle='#263138';ctx.beginPath();ctx.moveTo(-14,-51);ctx.lineTo(0,-71);ctx.lineTo(14,-51);ctx.closePath();ctx.fill();ctx.strokeStyle='#9eb3b0';ctx.lineWidth=1;ctx.stroke();ctx.restore();
 }
 function renderSenior(){
  if(!frames.collegiala)return;
@@ -273,12 +273,10 @@ function drawCMDEntrance(){
  ctx.fillStyle='#dec987';ctx.fillRect(Math.max(1,leafWidth-3),20,1,5);ctx.restore();
 }
 function drawExteriorPlayer(){
- if(introStage==='exit')drawCarDoor();
  ctx.save();ctx.globalAlpha=entryAlpha;
- if(introStage==='entering'){ctx.beginPath();ctx.rect(496,383,15,43);ctx.clip();}
  renderPlayer();ctx.restore();
  if(player.y<car.y-70&&images.passat)drawPassat();
- if(introStage!=='exit')drawCarDoor();
+ drawCarDoor();
 }
 function drawIntroFrame(){
  if(scene!=='exterior')return;
@@ -302,7 +300,7 @@ if(scene==='lobby'||scene==='end'){
 ctx.save();ctx.beginPath();ctx.rect(72,183,126,115);ctx.clip();const pedroIdle=pedroPose===3?Math.sin(clock*1.35):0,pedroShift=pedroPose===3?Math.sin(clock*.42)*.7:0,pedroFrame=pedroPose===3&&frames.pedroIdle?frames.pedroIdle[idleFrame(clock,8,.95)]:frames.pedro[pedroPose];renderFrame(pedroFrame,148+pedroShift,340-pedroIdle*.45,147);ctx.restore();
 
 if(elevatorOpen>0){const a=HOTSPOTS.find(h=>h.id==='elevator').rect;ctx.save();ctx.beginPath();ctx.rect(594,205,30,67);ctx.clip();ctx.fillStyle='#161818';ctx.fillRect(606-elevatorOpen*13,205,elevatorOpen*26,67);ctx.restore();ctx.fillStyle='#f3c474';ctx.fillRect(580,229,3,4);}
-drawRulesOnFloor();drawMoveMarker();renderLobbyActors();drawUmbrellaStand();drawThrownObject();}
+drawRulesOnFloor();drawMoveMarker();renderLobbyActors();drawThrownObject();}
 }ctx.restore();if(scene==='exterior')drawIntroFrame();requestAnimationFrame(draw);}
 function spriteFrames(img){
  const xs=[60,350,625,900,1215],ys=[0,313,620,926,1254],out=[];
@@ -344,23 +342,26 @@ async function intro(){
   introStage='door-opening';audio.effect('door');
   await animateIntro(.9,t=>car.door=t*t*(3-2*t),e);
   await sleep(350);assertEpoch(e);introStage='exit';
-  player.visible=true;player.x=390;player.y=520;player.dir=0;player.pose=8;
-  // Stay on the pavement beside the car; the old downward arc cut across the foreground fence.
-  await animateIntro(.95,t=>{player.x=390-12*t;player.y=520+10*t;player.pose=t<.35?8:null;gait=t*Math.PI*2;},e);
+  // Julito becomes visible already outside the door aperture. From here he only
+  // moves away from the hinge, so neither his body nor the suitcase crosses it.
+  player.visible=true;player.x=430;player.y=555;player.dir=2;player.pose=8;
+  await animateIntro(.7,t=>{const s=t*t*(3-2*t);player.x=430+40*s;player.y=555-20*s;player.pose=t<.28?8:null;gait=t*Math.PI*1.4;},e);
   audio.effect('case');player.pose=11;await sleep(450);assertEpoch(e);player.pose=null;
   // Step fully clear of the open leaf before it starts to close.
-  await animateIntro(.55,t=>{const s=t*t*(3-2*t);player.x=378+50*s;player.y=530-20*s;gait+=t*.16;},e);
+  await animateIntro(.55,t=>{const s=t*t*(3-2*t);player.x=470+35*s;player.y=535-30*s;gait+=t*.16;},e);
   introStage='door-closing';await animateIntro(.7,t=>car.door=1-t*t*(3-2*t),e);audio.effect('door');
   await sleep(300);assertEpoch(e);introStage='farewell';
   await lines([['Desde el coche','¡Escribe cuando llegues!'],['Julito','Pero si ya he llegado.']],false,e);
   await lines([['Julito','Bueno… pues aquí empieza todo.'],['Julito','Mi madre ha metido ropa para cuatro años. La carrera dura cinco.']],false,e);
   introStage='wide-shot';const shot=introShot;await animateIntro(.8,t=>introShot=shot*(1-t*t*(3-2*t)),e);
   // Authored exterior route: pavement only, with no segment through the fence, parked cars or shrubs.
-  introStage='approach';await walkRoute([[452,487],[482,453],[503,423]]);assertEpoch(e);
+  introStage='approach';await walkRoute([[505,475],[503,445],[503,423]]);assertEpoch(e);
   introStage='opening-cmd';player.dir=2;audio.effect('door');
   await animateIntro(.55,t=>cmdDoor=t,e);
   introStage='entering';
-  await animateIntro(.7,t=>{player.y=423-10*t;entryAlpha=1-t;},e);player.visible=false;
+  // Cross the threshold while the CMD door remains fully open. Fade only once
+  // Julito is behind the glass, instead of clipping his body through the leaf.
+  await animateIntro(.85,t=>{const s=t*t*(3-2*t);player.y=423-30*s;entryAlpha=t<.72?1:Math.max(0,(1-t)/.28);gait+=t*.12;},e);player.visible=false;
   introStage='closing-cmd';await animateIntro(.45,t=>cmdDoor=1-t,e);audio.effect('door');
   showTransition('COLEGIO MAYOR DEUSTO');await sleep(3000);assertEpoch(e);enterLobby();const lobbyEpoch=epoch;busy=true;await walk([300,498]);assertEpoch(lobbyEpoch);busy=false;
  }catch(err){if(err.message!=='cancelled')throw err;}
