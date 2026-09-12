@@ -25,6 +25,7 @@ export const HOTSPOTS=[
 {id:'stairs',name:'escaleras',rect:[665,230,75,120],at:[683,340],look:'Las escaleras suben con una alegría que mi maleta no comparte.'},
 {id:'entry',name:'puerta de entrada',rect:[5,493,181,101],at:[229,551],look:'Por ahí he entrado. Todavía podría decir que me he equivocado de edificio.'},
 {id:'mat',name:'felpudo de entrada',rect:[185,500,245,96],at:[229,551],look:'Un felpudo enorme con el escudo del Colegio Mayor. Lleva aquí el tiempo suficiente para saber más que Pedro.'},
+{id:'umbrellaStand',name:'paragüero',rect:[455,344,42,92],at:[510,400],look:'Un paragüero de latón con un paraguas negro. En Bilbao esto debería venir incluido con la matrícula.'},
 {id:'rulesBook',name:'reglamento de convivencia',rect:[348,405,58,35],at:[410,448],look:'El reglamento que me ha lanzado Pedro. La pedagogía de proyectil tiene algo difícil de olvidar.'}
 ];
 export const TALK={
@@ -40,7 +41,7 @@ after:[['Julito','¿Alguna cosa más?'],['Pedro','Tercera planta, cuando estés 
 locked:[['Julito','El ascensor está listo. Yo no.'],['Julito','Averiguar mi habitación y conseguir la llave debo.'],['Julito','Me ha salido el Yoda que llevo dentro. La maleta, en cambio, sigue hablando en kilos.'],['Julito','Pedro parece saber dónde vive todo el mundo. Será mejor preguntarle.']]
 };
 
-export function newState(){return {hasMasterKey:false,rewardShown:false,primTrusted:false,primClueSeen:false,bonusSeen:false,hintLevels:{},introCompleted:false,talkedToPedro:false,talkedToSenior:false,nickname:null,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,inspectedTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']};}
+export function newState(){return {hasMasterKey:false,rewardShown:false,primTrusted:false,primClueSeen:false,bonusSeen:false,hintLevels:{},introCompleted:false,talkedToPedro:false,talkedToSenior:false,nickname:null,pedroPushed:false,primPushed:false,triedPhoneBooths:false,rulesOnFloor:false,hasRulesBook:false,hasUmbrella:false,roomAssigned:false,hasKey310:false,hasMarca:false,hasComerciaNote:false,hasTobacco:false,inspectedTobacco:false,hasEmpiLetter:false,heardLogrones:false,inspectedMailbox:false,calledElevator:false,secondSceneCode:false,tookPapers:[],readPapers:[],readTopics:[],inspectedSigns:[],usedTargets:[],collectedItems:['bag']};}
 export const WALK_POLYGON=[[0,493],[295,406],[541,324],[553,280],[552,275],[632,275],[634,311],[711,323],[713,360],[730,382],[725,389],[641,429],[781,599],[0,599]];
 export const WALK_NODES=[[229,551],[355,445],[460,465],[510,400],[530,360],[570,334],[606,287],[683,340],[686,367],[607,458],[400,404]];
 // Obstacles describe floor footprints, not clickable artwork. Keep HOTSPOTS intact.

@@ -4,8 +4,13 @@ export const MISSION={
  signs:['board','comercia','rulesNotice','residentsNotice','directory','shield'],
  uses:['plant','pedro','stairs','sofa','phone','phoneBooths','prim','elevator'],
  dialogues:['welcome','key','place','rules','weather','canal','nickname','suitcase','comercia','prim','colegiala','bye'],
- objects:['bag','key','tobacco','empiLetter','rulesBook','correo','mundo','abc','marca','comerciaNote']
+ objects:['bag','key','tobacco','empiLetter','rulesBook','correo','mundo','abc','marca','comerciaNote','umbrella']
 };
+
+// The lift only needs the four story items. Exploration is deliberately separate
+// and its reward is forgiving enough that one tiny optional interaction is not a wall.
+export const LIFT_REQUIREMENTS=['key','tobacco','empiLetter','rulesBook'];
+export const EXPLORATION_REWARD_PERCENT=96;
 
 export const PAPER_INFO={
  mundo:{image:'newspaper-mundo-v2.png',name:'EL MUNDO',title:'EL CASO ROLDÁN ESTRECHA EL CERCO SOBRE INTERIOR',subtitle:'Nuevas revelaciones aumentan la presión sobre el Gobierno'},

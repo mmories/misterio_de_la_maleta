@@ -157,3 +157,16 @@ kbd{font:inherit;border:1px solid #60716e;padding:2px 5px;margin-left:4px;color:
 /* Every Pedro topic remains reachable on short desktop and mobile viewports. */
 #choices{max-height:63%;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;touch-action:pan-y}
 #items img,#inventory-grid img{width:64px;height:54px;object-fit:contain;flex-shrink:0}
+
+/* Immediate feedback: the command stays visible at the object and a collected item flashes in both inventories. */
+#action-cue{position:absolute;z-index:7;left:50%;top:5%;transform:translateX(-50%);background:#0a1415eF;border:1px solid #e7bf70;color:#fff0c9;padding:6px 10px;font-size:12px;font-weight:bold;letter-spacing:.7px;white-space:nowrap;pointer-events:none;box-shadow:2px 2px #0008}
+#items button.just-picked,#inventory-grid button.just-picked{animation:inventory-pick 1.3s ease-out;border-color:#ffe09a;background:#5a5433;color:#fff7d7}
+@keyframes inventory-pick{0%,38%{transform:translateY(-3px);box-shadow:0 0 0 2px #f6c86799}100%{transform:none;box-shadow:none}}
+#choices button.treated-topic{color:#8ba09d;background:#122022;text-decoration:line-through;text-decoration-color:#657b75}
+#choices button.new-topic{border-left:3px solid #e8be71;color:#ffe0a1}
+#choices button.new-topic::after{content:'NUEVO';float:right;font-size:9px;letter-spacing:1px;color:#8fb4a7;margin-top:3px}
+.mission-report h3{margin:1.25em 0 .55em;color:#e7c37a;font-size:14px;letter-spacing:1px}.mission-report .requirement{margin:.35em 0;padding:.45em .6em;background:#101b1d;border-left:3px solid #7e918d;color:#b4c4ba;text-transform:uppercase;font-size:12px}.mission-report .requirement.done{border-left-color:#e8be71;color:#fff0c9}
+
+/* Landscape phones use the complete 16:9 viewport. The scene is cropped vertically rather than stretched. */
+@media (max-width:900px) and (orientation:landscape){
+ body{padding:0;display:block}#shell{width:100%;min-height:100svh}.topbar{padding:5px 10px}.topbar,#shell>footer{display:none}#game{border:0;min-height:100svh;display:flex;flex-direction:column}#scene{aspect-ratio:16/9;width:100%;max-height:100svh;flex:1;background:#000}#scene>canvas{position:absolute;width:100%;height:111.112%;top:-5.556%;left:0}#hotspots{top:-5.556%;height:111.112%;bottom:auto}#controls{position:absolute;z-index:12;left:0;right:0;bottom:0;background:linear-gradient(0deg,#132226 75%,transparent);padding:0 10px 7px}#sentence{min-height:26px;margin-bottom:3px;font-size:11px}#verbs{grid-template-columns:repeat(6,1fr)}#verbs button{min-height:27px;padding:3px;font-size:9px}.console{grid-template-columns:1fr auto;gap:8px}.inventory{border:0;padding:0}.inventory-label,#open-inventory strong{font-size:8px}#open-inventory{min-height:34px;padding:4px 7px}#inventory-summary{display:none}#action-cue{top:4%;font-size:10px}.overlay{z-index:13}.title-buttons{flex-wrap:nowrap}.title-buttons button{padding:7px 10px}.episode{margin-top:3%}}
