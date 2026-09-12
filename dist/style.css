@@ -157,6 +157,8 @@ kbd{font:inherit;border:1px solid #60716e;padding:2px 5px;margin-left:4px;color:
 /* Every Pedro topic remains reachable on short desktop and mobile viewports. */
 #choices{max-height:63%;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;touch-action:pan-y}
 #items img,#inventory-grid img{width:64px;height:54px;object-fit:contain;flex-shrink:0}
+#items .umbrella-icon{display:block;width:36px;height:40px;margin:auto;image-rendering:pixelated}
+#inventory-grid .umbrella-icon{display:block;width:64px;height:54px;image-rendering:pixelated}
 
 /* Immediate feedback: the command stays visible at the object and a collected item flashes in both inventories. */
 #action-cue{position:absolute;z-index:7;left:50%;top:5%;transform:translateX(-50%);background:#0a1415eF;border:1px solid #e7bf70;color:#fff0c9;padding:6px 10px;font-size:12px;font-weight:bold;letter-spacing:.7px;white-space:nowrap;pointer-events:none;box-shadow:2px 2px #0008}
@@ -167,7 +169,8 @@ kbd{font:inherit;border:1px solid #60716e;padding:2px 5px;margin-left:4px;color:
 #choices button.new-topic::after{content:'NUEVO';float:right;font-size:9px;letter-spacing:1px;color:#8fb4a7;margin-top:3px}
 .mission-report h3{margin:1.25em 0 .55em;color:#e7c37a;font-size:14px;letter-spacing:1px}.mission-report .requirement{margin:.35em 0;padding:.45em .6em;background:#101b1d;border-left:3px solid #7e918d;color:#b4c4ba;text-transform:uppercase;font-size:12px}.mission-report .requirement.done{border-left-color:#e8be71;color:#fff0c9}
 
-/* Desktop uses 16:9 with a vertical crop rather than stretching the artwork. */
-@media (min-width:701px){
+/* Desktop uses 16:9 with a vertical crop rather than stretching the artwork.
+   A phone in landscape keeps the original composition and touch layout. */
+@media (min-width:901px) and (min-height:600px){
  #scene{aspect-ratio:16/9}#scene>canvas{position:absolute;width:100%;height:111.112%;top:-5.556%;left:0}#hotspots{top:-5.556%;height:111.112%;bottom:auto}
 }

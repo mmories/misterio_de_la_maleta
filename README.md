@@ -58,6 +58,7 @@ El clic inicial desbloquea audio. Música y efectos tienen controles independien
 - `dist/index.html`: estructura y controles accesibles.
 - `dist/style.css`: presentación, consola y adaptación a pantallas pequeñas.
 - `dist/game.js`: dirección de escenas, composición, diálogo e interacciones.
+- `dist/assets.js`: manifiesto y carga comprobada de los recursos gráficos.
 - `dist/animation.js`: perspectiva, aceleración, selección de fotogramas y movimiento secundario.
 - `dist/content.js`: objetivos, métricas de misión y metadatos de contenido.
 - `dist/data.js`: verbos, hotspots, diálogos, estado inicial y navegación mediante grafo de visibilidad.
@@ -134,7 +135,7 @@ El guardado es local a este navegador y origen: no se comparte entre dispositivo
 
 ## Movimiento de Julito — rama feat/julito-movimiento-natural
 
-Parte de `develop` (`18a5d6e`). Conserva el fondo, los 25 hotspots, sus puntos de aproximación, diálogos, puzles y guardado.
+Parte de `develop` (`18a5d6e`). Conserva el fondo, los 26 hotspots, sus puntos de aproximación, diálogos, puzles y guardado.
 
 - Rutas con obstáculos de suelo para Prim y la mesa, además del contorno que excluye paredes, mostrador, sofás y plantas. Los segmentos se comprueban en cada cruce de límites, sin saltarse obstáculos por muestreo.
 - Avance con pasos de simulación pequeños, aceleración exponencial, frenado y consumo del tramo sobrante al llegar a una esquina. La componente vertical y la zancada usan la misma métrica de perspectiva.
@@ -151,6 +152,6 @@ Se reutilizan las hojas existentes. Las diagonales usan vistas frontal, trasera 
 
 Las cuatro hojas transparentes estan ahora conectadas al hall: 32 fases de marcha, ocho de reposo, seis de recogida y cuatro de habla. Se recortan por celdas fijas de 256x256 sin eliminar el margen transparente; ancla (128,224) y altura base 190. Las poses narrativas especiales conservan su hoja original.
 
-La escala del hall se calibra visualmente con 72 px a y=287 y 190 px a y=551. Interpolacion lineal continua hasta el borde inferior, con limites de seguridad 64-216 px. Son proporciones aproximadas del fondo, no una reconstruccion metrica de su camara. La escala afecta dibujo y velocidad de desplazamiento; la cadencia sigue la distancia recorrida.
+La escala del hall se calibra visualmente con 82 px a y=287 y 220 px a y=551. La interpolación monotónica evita saltos entre zonas. Son proporciones aproximadas del fondo, no una reconstrucción métrica de su cámara. La escala afecta dibujo y velocidad de desplazamiento; la cadencia sigue la distancia recorrida.
 
-Validacion: carga real Canvas de 50 celdas, canal alfa y ancla comun; composicion a tres profundidades; pruebas de navegacion y flujo narrativo. Pendiente prueba manual de animacion y entrada en navegador real.
+Validación: carga Canvas de 50 celdas, canal alfa y ancla común; composición a tres profundidades; pruebas de navegación y flujo narrativo. La entrada del CMD exige una ruta de marcha activa y el recorrido automatizado completo alcanza el 100 % sin manipular el estado. Sigue pendiente la inspección visual manual en varios navegadores y móviles físicos.

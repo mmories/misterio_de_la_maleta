@@ -8,7 +8,7 @@ class Element{constructor(){this.hidden=true;this.children=[];this.style={};this
 class AudioStub{setTheme(){}effect(){}playLogrones(){this.anthem=(this.anthem||0)+1;}async unlock(){}}
 let nicknameAnswer=null;let timer=0;const timers=new Map();const memory=new Map(),storage={getItem:key=>memory.get(key)||null,setItem:(key,value)=>memory.set(key,value)};const context={cleanNickname,openNicknameEditor:async()=>nicknameAnswer,...data,...animation,...content,...hints,readSave:()=>saves.readSave(storage),writeSave:state=>saves.writeSave(state,storage),AudioEngine:AudioStub,console,performance:{now:()=>0},document:{getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement:()=>new Element(),createTextNode:t=>t,addEventListener(){}},window:{},requestAnimationFrame(){},setTimeout(fn){const id=++timer;timers.set(id,fn);return id;},clearTimeout(id){timers.delete(id);},setInterval(){return ++timer;},clearInterval(){},assert};
 vm.createContext(context);let src=fs.readFileSync(new URL('../dist/game.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/load\(\);\s*$/,'');
-vm.runInContext(src+`\nthis.testGame={choicesVisible:()=>!$('choices').hidden,intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction,introStage,car:{...car},entryAlpha,cmdDoor}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
+vm.runInContext(src+`\nthis.testGame={choicesVisible:()=>!$('choices').hidden,intro,sceneSnapshot:()=>({scene,x:player.x,y:player.y,pose:player.pose,visible:player.visible,activeInteraction,introStage,pathLength:path.length,car:{...car},entryAlpha,cmdDoor}),maybeReward,rewardMasterKey,refreshContinue,dialogueText,setNickname,continueGame,showHint,missionStats,reset,checkpoint,interact,selectVerb,inventoryClick,openInventory,enterLobby,getState:()=>state,inventoryItems,say,setBusy:value=>busy=value,getLine:()=>fullLine,getChoices:()=>$('choices').children,getDisplayName:()=>speakerName('Julito'),getInventory:()=>({open:$('inventory-modal').open,count:$('inventory-grid').children.length}),begin:()=>{state=newState();busy=false;$('choices').hidden=true;$('card').hidden=true;enterLobby();},tick:t=>draw(t),next:()=>{if(speechResolve){nextSpeech();nextSpeech();}},closeCard:()=>{if(!$('card').hidden)$('card').querySelector('button').onclick();},select:(v,item)=>{selectVerb(v);selected=item;},anthemCount:()=>audio.anthem||0,isBusy:()=>busy};`,context);
 const game=context.testGame;let t=0;
 // Record real requested delays even though this harness fast-forwards timers.
 const readingDelays=[],schedule=context.setTimeout;
@@ -19,6 +19,7 @@ const h=id=>data.HOTSPOTS.find(x=>x.id===id);
 for(const a of data.HOTSPOTS)for(const b of data.HOTSPOTS)assert.ok(data.findPath(a.at,b.at),a.id+' -> '+b.id);
 let count=0;for(const v of data.VERBS)for(const hotspot of data.HOTSPOTS){game.begin();game.selectVerb(v);await run(()=>game.interact(hotspot));count++;}
 game.begin();game.selectVerb('EMPUJAR');await run(()=>game.interact(h('pedro')));assert.equal(game.getState().pedroPushed,true,'Pedro must react when pushed');assert.equal(game.getState().rulesOnFloor,true,'Thrown rules must remain on the floor');game.selectVerb('COGER');await run(()=>game.interact(h('rulesBook')));assert.equal(game.getState().hasRulesBook,true,'Thrown rules must be collectible');assert.ok(game.getState().collectedItems.includes('rulesBook'));
+game.begin();const umbrellaHotspot=context.document.getElementById('hotspot-umbrellaStand');umbrellaHotspot.hidden=false;game.selectVerb('COGER');await run(()=>game.interact(h('umbrellaStand')));assert.equal(game.getState().hasUmbrella,true,'The umbrella must be collectible');assert.equal(umbrellaHotspot.hidden,false,'Picking up the umbrella must leave the umbrella stand interactable');await run(()=>game.interact(h('umbrellaStand')));assert.equal(game.getState().hasUmbrella,true,'Picking up an already collected umbrella must not change state');
 game.begin();game.selectVerb('EMPUJAR');await run(()=>game.interact(h('prim')));assert.equal(game.getState().primPushed,true,'Pedro must reprimand Julito for pushing Prim');
 game.begin();game.selectVerb('USAR');await run(()=>game.interact(h('phoneBooths')));assert.equal(game.getState().triedPhoneBooths,true,'Julito must be able to try the corridor by the radiator');
 game.begin();game.selectVerb('HABLAR CON');await run(()=>game.interact(h('colegiala')));assert.equal(game.getState().talkedToSenior,true,'The senior resident conversation must be optional and reachable');assert.ok(game.getState().readTopics.includes('colegiala'));
@@ -30,7 +31,7 @@ game.select('USAR','marca');await run(()=>game.interact(h('correo')));assert.equ
 game.select('USAR','bag');await run(()=>game.interact(h('prim')));assert.equal(game.getState().hasKey310,true);
 game.selectVerb('USAR');await run(()=>game.interact(h('sofa')));assert.equal(game.getState().hasTobacco,true);assert.ok(game.getState().collectedItems.includes('tobacco'));
 game.selectVerb('MIRAR');await run(()=>game.inventoryClick('tobacco'));assert.equal(game.getState().inspectedTobacco,true);assert.equal(game.getState().hasComerciaNote,false,'First tobacco inspection must only describe the packet');await run(()=>game.inventoryClick('tobacco'));assert.equal(game.getState().hasComerciaNote,true,'Second tobacco inspection must reveal La Comercial invitation');assert.ok(game.getState().collectedItems.includes('comerciaNote'));
-game.getState().hasUmbrella=true;game.selectVerb('MIRAR');const umbrellaInspection=game.inventoryClick('umbrella');await Promise.resolve();assert.match(elements.get('card').innerHTML,/PARAGUAS AZUL DEUSTO/);assert.ok(!elements.get('card').innerHTML.includes('LA COMERCIAL'),'The umbrella must not open the Comercial invitation');game.closeCard();await umbrellaInspection;game.getState().hasUmbrella=false;
+game.getState().hasUmbrella=true;game.selectVerb('MIRAR');elements.get('card').hidden=true;await run(()=>game.inventoryClick('umbrella'));assert.match(game.getLine(),/duelo educado/);assert.equal(elements.get('card').hidden,true,'The umbrella description must use the lower dialogue panel, not a document');assert.ok(!game.getLine().includes('LA COMERCIAL'),'The umbrella must not open the Comercial invitation');game.getState().hasUmbrella=false;
 game.selectVerb('USAR');await run(()=>game.interact(h('elevator')));assert.equal(game.getState().calledElevator,false,'Empi letter must be required to use the elevator');
 game.selectVerb('COGER');await run(()=>game.interact(h('mat')));assert.equal(game.getState().hasEmpiLetter,true);assert.ok(game.getState().collectedItems.includes('empiLetter'));
 game.openInventory();assert.equal(game.getInventory().open,true);assert.equal(game.getInventory().count,5,'Independent inventory must list every collected item');elements.get('inventory-modal').close();
@@ -39,6 +40,8 @@ game.selectVerb('EMPUJAR');await run(()=>game.interact(h('pedro')));game.selectV
 assert.ok(animation.perspectiveScale('lobby',551)>animation.perspectiveScale('lobby',287),'Foreground character must be larger');
 assert.ok([...Array(32)].every((_,i)=>{const f=animation.movementStyle({clock:0,gait:i/4,moving:true,direction:2,scale:1,speed:135}).frame;return f>=0&&f<8;}),'Walk frame must stay inside the 8-frame cycle');
 assert.ok([...Array(4)].every((_,dir)=>[...Array(8)].every((__,frame)=>{const index=animation.walkFrameIndex(dir,frame);return index>=0&&index<24;})),'Every directional walk cycle must use a valid clean frame');
+assert.ok(src.includes('frames.primIdle=uniformFrameBounds('),'Prim poses must share one bottom-aligned frame box to preserve scale');
+assert.ok(src.includes('renderFrameWidth(f,269,443,w)'),'Prim must keep a stable body width across relaxed and alert poses');
 assert.ok(!src.includes(']],true,e)'), 'Intro dialogue must wait for CONTINUAR instead of advancing automatically');
 assert.equal(content.isAnthemLine('Soy un hincha del equipo, el Logroñés'),true);
 assert.equal(game.anthemCount(),0,'Singing must never trigger anthem audio');
@@ -142,7 +145,7 @@ await run(async()=>{
   const detail=game.introDetails();
   if(snap.introStage==='exit')assert.ok(snap.x>=425,'Julito must stay outside the car-door sweep');
   if(snap.introStage==='door-closing')assert.ok(snap.x>=504,'The car door only closes after Julito steps clear');
-  if(snap.introStage==='entering')assert.ok(snap.cmdDoor>=.99,'Julito crosses the CMD threshold only with its door fully open');
+  if(snap.introStage==='entering'){assert.ok(snap.cmdDoor>=.99,'Julito crosses the CMD threshold only with its door fully open');assert.ok(snap.pathLength>0,'Julito must walk through the CMD door instead of being tweened or floated');}
   if(detail.speechVisible){
    visibleIntroLines++;assert.equal(snap.introStage,'farewell','No dialogue during parking or exit');
    assert.equal(detail.door,0);assert.equal(detail.y,505);assert.equal(detail.visible,true);
@@ -194,3 +197,40 @@ await run(()=>game.getChoices().find(b=>b.textContent.includes('Eso es todo')).o
 assert.equal(game.choicesVisible(),false);assert.equal(game.isBusy(),false);
 game.selectVerb('HABLAR CON');await run(()=>game.interact(h('pedro')));assert.ok(game.choicesVisible(),'Pedro can be approached again');
 console.log('PASS: all Pedro topics, repeat questions, double activation and conversation reopening.');
+
+// A malformed or interrupted Pedro response must recover the conversation instead
+// of leaking an asynchronous error that can look like a game restart.
+const originalPlace=data.TALK.place,originalConsoleError=context.console.error;
+context.console.error=()=>{};data.TALK.place=null;
+try{
+ const brokenTopic=game.getChoices().find(b=>b.textContent.includes('exactamente'));assert.ok(brokenTopic);
+ await run(()=>brokenTopic.onclick());
+}finally{data.TALK.place=originalPlace;context.console.error=originalConsoleError;}
+assert.equal(game.sceneSnapshot().scene,'lobby','A Pedro response error must stay in reception');
+assert.equal(game.getState().talkedToPedro,true,'A Pedro response error must preserve progress');
+assert.ok(game.choicesVisible(),'A Pedro response error must restore the topic menu');
+assert.equal(game.isBusy(),true,'The restored Pedro menu must remain an active conversation');
+await run(()=>game.getChoices().find(b=>b.textContent.includes('Eso es todo')).onclick());
+assert.equal(game.isBusy(),false,'The recovered conversation must still close normally');
+console.log('PASS: a failed Pedro response preserves the game and restores his topic menu.');
+
+// Reach 100% only through the same actions available to a player. This guards
+// against optional entries that exist in MISSION but cannot actually be earned.
+game.begin();
+for(const id of content.MISSION.signs){game.selectVerb('MIRAR');await run(()=>game.interact(h(id)));}
+for(const id of content.MISSION.uses){game.selectVerb('USAR');await run(()=>game.interact(h(id)));}
+game.selectVerb('HABLAR CON');await run(()=>game.interact(h('colegiala')));
+game.selectVerb('HABLAR CON');await run(()=>game.interact(h('pedro')));
+const chooseTopic=async text=>{const option=game.getChoices().find(b=>b.textContent.includes(text));assert.ok(option,'Missing Pedro topic: '+text);await run(()=>option.onclick());};
+for(const text of ['llave','exactamente','norma','tiempo','Canal+','maleta','Comercial','perro'])await chooseTopic(text);
+await chooseTopic('Eso es todo');
+for(const id of ['correo','mundo','abc','marca']){game.selectVerb('COGER');await run(()=>game.interact(h(id)));}
+game.selectVerb('COGER');await run(()=>game.interact(h('umbrellaStand')));
+game.selectVerb('COGER');await run(()=>game.interact(h('mat')));
+game.selectVerb('EMPUJAR');await run(()=>game.interact(h('pedro')));
+game.selectVerb('COGER');await run(()=>game.interact(h('rulesBook')));
+game.selectVerb('MIRAR');await run(()=>game.inventoryClick('tobacco'));await run(()=>game.inventoryClick('tobacco'));
+const genuineProgress=game.missionStats();
+assert.equal(genuineProgress.percent,100,'Every mission entry must be reachable through real interactions');
+for(const row of genuineProgress.rows)assert.equal(row.done,row.total,row.label+' must be fully reachable');
+console.log('PASS: genuine player walkthrough reaches every requirement and 100% exploration.');
